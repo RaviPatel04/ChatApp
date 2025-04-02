@@ -1,0 +1,1037 @@
+{% load static tailwind_tags %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+    <title>Chat | Ripple</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="ie=edge">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+		
+        <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}">
+		<link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32x32.png' %}">
+		<link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/favicon-16x16.png' %}">
+		<link rel="manifest" href="{% static 'images/site.webmanifest' %}">
+        
+        {% tailwind_css %}
+        <style>
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .scrollbar-hide {
+                -ms-overflow-style: none;  
+                scrollbar-width: none; 
+            }
+
+
+            .scrollbar-custom::-webkit-scrollbar {
+                width: 8px;
+            }
+              
+            .scrollbar-custom::-webkit-scrollbar-track {
+                background: #e6d8d8;
+                border-radius: 10px;
+            }
+              
+            .scrollbar-custom::-webkit-scrollbar-thumb {
+                background: #e04365;
+                cursor: default;
+                border-radius: 10px;
+            }
+              
+            .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+                background: #5c51f0;
+            }
+
+        
+            .chat-bubble {
+                word-wrap: break-word; 
+                overflow-wrap: break-word; 
+            }
+
+            audio::-webkit-media-controls-panel { 
+
+                background-color: #d6d2d2; 
+              
+            } 
+
+            .emoji-picker {
+                top: -600px;
+            }
+
+            .emoji-picker__content{
+                margin-bottom: 20px;
+            }
+
+        </style>
+	</head>
+
+
+	<body class="bg-white font-poppins leading-normal tracking-normal">
+
+        <div class="flex h-screen bg-gray-100">
+
+            <!-- Sidebar -->
+            <div class="w-20 bg-white border-r border-gray-300 flex flex-col items-center pb-5">
+                <div class="space-y-8 m-5">
+                    {% comment %} <a href="{% url "home" %}"><button class="p-3 bg-gray-200 rounded-lg text-gray-700">
+                        <img src="{% static "images/logo_chat.png" %}" alt="">
+                    </button></a> {% endcomment %}
+
+                    <!-- Profile Button -->
+                    <div class="relative group flex justify-center mt-1">
+                        <button onclick="toggleProfile()" class="profile-button">
+                            <img src="{{ request.user.profile.avatar.url }}" alt="Profile" class="w-12 h-12 rounded-full object-cover">
+                        </button>
+                        <span class="absolute left-16 -translate-x-1/2 -top-5 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                            Profile
+                        </span>
+                    </div>
+
+                    <!-- Chat Button -->
+                    <div class="relative group flex justify-center">
+                        <a href="{% url 'home' %}">
+                            <button class="w-12 h-12 bg-gray-200 rounded-lg text-gray-700">
+                                <i class="fa-solid fa-house text-xl"></i>
+                            </button>
+                            <span class="absolute left-16 -translate-x-1/2 -top-5 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                                Home
+                            </span>
+                        </a>
+                    </div>
+
+                    <!-- Home Button -->
+                    <div class="relative group flex justify-center">
+                        <button class="w-12 h-12 bg-gray-200 rounded-lg text-gray-700">
+                            <i class="fas fa-comments text-xl"></i>
+                        </button>
+                        <span class="absolute left-16 -translate-x-1/2 -top-5 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                            Chat
+                        </span>
+                    </div>
+
+                    <!-- Notification Button -->
+                    <div class="relative group flex justify-center mb-6">
+                        <button onclick="toggleNotifications()" class="w-12 h-12 bg-gray-200 rounded-lg text-gray-700">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span id="notificationBadge" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-sm rounded-full items-center justify-center hidden text-center">0</span>
+                        </button>
+                        <span class="absolute left-20 -translate-x-1/2 -top-5 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                            Notifications
+                        </span>
+                    </div>
+
+                    <!-- Setting Button -->
+                    <div class="relative group flex justify-center">
+                        <button class="w-12 h-12 bg-gray-200 rounded-lg text-gray-700">
+                            <i class="fas fa-cog text-xl"></i>
+                        </button>
+                        <span class="absolute left-16 -translate-x-1/2 -top-5 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                            Settings
+                        </span>
+                    </div>
+                
+                    {% comment %} <!-- Groups Button -->
+                    <div class="relative group flex justify-center">
+                        <button class="w-12 h-12 bg-gray-200 rounded-lg text-gray-700">
+                            <i class="fas fa-users text-xl"></i>
+                        </button>
+                        <span class="absolute left-16 -translate-x-1/2 -top-5 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                            Groups
+                        </span>
+                    </div>
+                
+                    <!-- Archive Button -->
+                    <div class="relative group flex justify-center">
+                        <button class="w-12 h-12 bg-gray-200 rounded-lg text-gray-700">
+                            <i class="fas fa-archive text-xl"></i>
+                        </button>
+                        <span class="absolute w-max left-20 -translate-x-1/2 -top-5 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                            Archive chats
+                        </span>
+                    </div> {% endcomment %}
+
+                
+                </div>
+
+                <div class="mt-auto m-5">
+                    <!-- LogOut Button -->
+                    <div class="relative group flex justify-center">
+                        <a href="{% url 'logout_view' %}">
+                            <button class="w-12 h-12 bg-gray-200 rounded-lg text-gray-700">
+                                <i class="fa-solid fa-right-from-bracket text-xl"></i>
+                            </button>
+                            <span class="absolute left-16 -translate-x-1/2 -top-5 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                                LogOut
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Chat List -->
+            <div class="w-80 border-r p-5 flex flex-col bg-[#256eff] bg-opacity-10 shadow-md">
+                <div class="mb-4 relative">
+                    <input type="text" class="w-full p-2 pl-12 border-0 bg-[#101B4F] bg-opacity-15 opacity-50 rounded-lg font-medium shadow-sm " placeholder="Search messages">
+                    
+                    {% comment %} <!-- Add Friend Button -->
+                    <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 group flex justify-center">
+                        <button onclick="openAddFriendPopup()">
+                            <i class="fas fa-user-plus text-xl"></i>
+                        </button>
+                        <span class="absolute w-max -right-4 -translate-x-1/2 -top-5 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                            Add Friend
+                        </span>
+                    </div> {% endcomment %}
+
+                    {% comment %} <div class="absolute h-6 rounded-full w-0.5 bg-gray-400 left-10 top-1/2 transform -translate-y-1/2 ml-1"></div> {% endcomment %}
+                    <!-- Search Friend Button -->
+                    <button class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                    
+                </div>
+
+
+
+                <!-- All Friends List -->
+                <div class="overflow-y-auto h-1/2">
+
+                    <div class="flex justify-between">
+                        <h2 class="text-gray-700 font-semibold">People</h2>
+                        <!-- Add Friend Button -->
+                        <div class="text-gray-500 group flex justify-center">
+                            <button onclick="openAddFriendPopup()">
+                                <i class="fas fa-user-plus text-xl"></i>
+                            </button>
+                            <span class="absolute w-max -ml-8 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                                Add Friend
+                            </span>
+                        </div>
+                    </div>
+                    {% for friend in friends %}
+                        <div class="p-3 mx-1 flex items-center rounded-3xl hover:shadow-md rounded-t-none mb-2 cursor-pointer hover:bg-gray-100 hover:bg-opacity-70 friend-item"
+                            onclick="openFriend({{ friend.id }}, '{{ friend.username }}', '{{ friend.profile.avatar.url }}')"
+                            data-friend-id="{{ friend.id }}">
+                            <img src="{{ friend.profile.avatar.url }}" class="w-10 h-10 rounded-full object-cover" alt="User">
+                            <div class="ml-3">
+                                <p class="font-medium">{{ friend.username }}</p>
+                                <p class="text-xs text-gray-500">
+                                    {% if friend.last_message %}
+                                        {{ friend.last_message.text|truncatechars:20 }}  <!-- ✅ Show last message (truncate long ones) -->
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <hr class="h-0.5 bg-gray-300 rounded-full">
+                    {% endfor %}
+                </div>
+
+                <hr class="h-2 bg-red-600 bg-opacity-50 rounded-full">
+
+                <!-- All Group List -->
+                <div class="mt-4">
+                    <div class="flex justify-between">
+                        <h2 class="text-gray-700 font-semibold">Groups</h2>
+                        <!-- Add Friend Button -->
+                        <div class="text-gray-500 group flex justify-center">
+                            <button onclick="openAddGroupPopup()">
+                                <i class="fa-solid fa-users text-xl"></i>
+                                <i class="fa-solid fa-plus relative -top-1.5 -left-1 text-xs font-extrabold"></i>
+                            </button>
+                            <span class="absolute w-max -ml-14  -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                                Add Group
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Groups list -->
+                    <div class="overflow-y-auto h-40 scrollbar-hide">
+                        {% for group in groups %}
+                            <div class="p-3 mx-1 flex items-center rounded-3xl hover:shadow-md rounded-t-none mb-2 cursor-pointer hover:bg-gray-100 hover:bg-opacity-70 group-item" 
+                            onclick="openGroup({{ group.id }}, '{{ group.name }}', '{{ group.profile.group_avatar.url }}', '{{group.admin}}')" 
+                            data-group-id="{{ group.id }}">
+                                <!-- Example group icon -->
+                                <img src="{{ group.profile.group_avatar.url }}" class="w-10 h-10 rounded-full object-cover" alt="Group Icon"/>
+                                <div class="ml-3">
+                                    <p class="font-medium">{{ group.name }}</p>
+                                    <p class="text-xs text-gray-500">
+                                        {% if group.last_message %}
+                                            {{ group.last_message.text|truncatechars:20 }}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            <hr class="h-0.5 bg-gray-300 rounded-full" />
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            
+
+            <!-- ✅ Welcome Message (Now Properly Centered) -->
+            <div id="welcomeMessage" class="flex flex-col h-screen w-full justify-center text-center absolute inset-0 pointer-events-none">
+                <div class="ml-80">
+                    <h2 class="text-3xl font-bold text-gray-700">🚀 Ignite Your Conversations! 💬✨</h2>
+                    <p class="text-lg text-gray-500 mt-4">  Connect, share, and create unforgettable moments with friends and family <br> in a vibrant space. 🎉🤗 Let your chats come alive!
+                    </p>
+                </div>
+            </div>
+
+        
+            <!-- Chat Window -->
+            <div id="chatWindow" class="flex-1 flex flex-col h-screen bg-[#5b51eb] bg-opacity-5 invisible opacity-0 transition-opacity duration-300">
+                
+                <!-- Chat Window Header -->
+                <div class="p-4 bg-white border-gray-300 flex items-center justify-between shadow-sm shadow-gray-200">
+                    <div class="flex items-center bg-blue-100 p-2 rounded-xl cursor-pointer" onclick="openProfilePopup()">
+                        <img id="chatAvatar" class="w-10 h-10 rounded-full object-cover" alt="User">
+                        <p id="chatUsername" class="ml-3 text-lg font-medium"></p>
+                    </div>
+                    
+                    <span id="isAdmin" hidden>{{ request.user.username}}</span>
+                    {% comment %} <span id="groupAdmin" hidden>{{ group.admin }}</span>{% endcomment %}
+                    <div class="space-x-2 flex">
+                        <div class="flex justify-center"  id="addMemberButton" style="display: none;">
+                            <button class="group relative p-4 text-gray-500 bg-blue-100 hover:bg-blue-200 rounded-2xl" onclick="openAddMemberPopup()">
+                            <i class="fa-solid fa-user-plus"></i>
+                            <span class="absolute w-max -left-14 top-0 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gray-800 text-white text-xs px-2 py-1 rounded-md">
+                                Add Group Member
+                            </span>
+                            </button>
+                        </div>
+                      
+                        {% comment %} <div class="text-gray-500 group flex justify-center">
+                            <button class="p-4 text-gray-500 bg-blue-100 hover:bg-blue-200 rounded-2xl" onclick="openAddMemberPopup()">
+                                <i class="fa-solid fa-user-plus"></i>
+                            </button>
+                            <span class="absolute w-max -ml-8 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                                Add Group Member
+                            </span>
+                        </div> {% endcomment %}
+                        
+                    
+                        <button class="text-gray-500" onclick="closeChat()">
+                            <i class="fa-solid fa-circle-xmark text-xl rounded-full p-3 hover:bg-blue-100"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Chat Window Message User -->
+                <div id="messagesContainer" class="flex-1 overflow-y-auto p-12 scrollbar-custom"></div>
+
+                <!-- Chat Window Inputs -->
+                <div class="px-4 py-2 flex items-center mx-24 mb-14 bg-white rounded-xl shadow-lg shadow-blue-200">
+                    <!-- Record Voice Button -->
+                    <div class="relative group flex justify-center">
+                        <button id="recordButton">
+                            <i class="fas fa-microphone text-xl"></i>
+                        </button>
+                        <span class="w-max absolute left-4 -translate-x-1/2 -top-8 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            Record voice message
+                        </span>
+                    </div>
+
+                    <textarea id="messageInput" class="flex-1 p-3 border-0 rounded-lg mx-3 focus:ring-0 focus:outline-none resize-none h-12 max-h-24 overflow-y-visible scrollbar-custom" placeholder="Type a message..." rows="1"></textarea>
+                    
+                    <!-- Attach Button -->
+                    <div class="relative group flex justify-center">
+                        <input type="file" id="attachmentInput" class="hidden" accept="image/*,application/pdf,application/msword,application/vnd.ms-excel,video/*,.pdf,.doc,.docx,.xls,.xlsx">
+                        <button onclick="document.getElementById('attachmentInput').click()" class="p-2">
+                            <i class="fas fa-paperclip text-xl"></i>
+                        </button>
+                        <span class="w-max absolute left-4 -translate-x-1/2 -top-6 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                           Attach
+                        </span>
+                    </div>
+
+                    <!-- Emojis Button -->
+                    <div class="relative group flex justify-center">
+                        <button id="emojiBtn" class="p-2" type="button">
+                            <i class="fas fa-smile text-xl"></i>
+                        </button>
+                        <span class="w-max absolute left-4 -translate-x-1/2 -top-6 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                           Emojis
+                        </span>
+                    </div>
+
+                    <!-- Send Button -->
+                    <div class="relative group flex justify-center">
+                        <button class="p-2 text-blue-600"  onclick="selected()">
+                            <i class="fas fa-paper-plane text-xl"></i>
+                        </button>
+                        <span class="w-max absolute left-4 -translate-x-1/2 -top-6 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                           Send
+                        </span>
+                    </div>            
+                </div>
+            </div>
+        
+        </div>
+
+
+
+        <!-- ALL Popups -->
+
+        <!-- Friend Request Popup -->
+        <div id="addFriendPopup" class="hidden fixed inset-0 bg-black bg-opacity-50 items-start justify-start">
+            <div class="bg-white p-6 rounded-lg shadow-lg w-96 my-24 mx-96">
+                <h2 class="text-lg font-semibold mb-4">Send Friend Request</h2>
+                <input id="friendUsername" type="text" class="w-full p-2 border rounded-lg mb-3" placeholder="Enter username">
+                <input id="friendEmail" type="email" class="w-full p-2 border rounded-lg mb-3" placeholder="Enter email">
+                <div class="flex justify-end">
+                    <button onclick="closeAddFriendPopup()" class="px-4 py-2 bg-gray-400 text-white rounded-lg mr-2 hover:bg-gray-500">Cancel</button>
+                    <button onclick="sendFriendRequest()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Send Request</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Group Popup -->
+        <div id="addGroupPopup" class="hidden fixed inset-0 bg-black bg-opacity-50 items-end">
+            <div class="bg-white p-6 rounded-lg shadow-lg w-96 mx-96 my-24">
+                <h2 class="text-lg font-semibold mb-4">Create New Group</h2>
+                <input id="groupNameInput" type="text" class="w-full p-2 border rounded-lg mb-3" placeholder="Enter group name"/>
+                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
+                <div class="flex justify-end">
+                    <button onclick="closeAddGroupPopup()" class="px-4 py-2 bg-gray-400 text-white rounded-lg mr-2 hover:bg-gray-500">
+                        Cancel
+                    </button>
+                    <button onclick="createGroup()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                        Create Group
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        
+        <div id="addMemberPopup" class="hidden fixed inset-0 bg-black bg-opacity-50 items-start justify-end">
+            <div class="bg-white p-6 rounded-lg shadow-lg w-96 mx-24 my-16">
+              <h2 class="text-lg font-semibold mb-4">Add Member to Group</h2>
+              <input id="addMemberUsername" type="text" class="w-full p-2 border rounded-lg mb-3" placeholder="Enter username"/>
+              <input id="addMemberEmail" type="email" class="w-full p-2 border rounded-lg mb-3" placeholder="Enter email"/>
+              <div class="flex justify-end">
+                <button onclick="closeAddMemberPopup()" class="px-4 py-2 bg-gray-400 text-white rounded-lg mr-2 hover:bg-gray-500">
+                  Cancel
+                </button>
+                <button onclick="sendGroupInvite()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                  Add Member
+                </button>
+              </div>
+            </div>
+        </div>
+
+
+        <!-- Profile Popup -->
+        <div id="profilePopup" class="fixed inset-0 bg-black bg-opacity-50 invisible flex items-start opacity-100">
+            <div class="relative bg-white mt-14 ml-16 sm:rounded-2xl shadow-xl transform transition-transform duration-300 ease-in-out translate-y-0">
+                <!-- Profile Header -->
+                <div class="p-3 flex justify-between items-center border-b">
+                    <h2 class="text-lg font-semibold">Profile</h2>
+                    <button onclick="toggleProfile()" class="p-2 hover:bg-gray-950/5 rounded-full">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Profile Content -->
+                <form id="profileForm" method="POST" action="{% url 'update_profile' %}" enctype="multipart/form-data" class="w-[450px] h-[70vh] sm:h-[600px] overflow-y-auto scrollbar-hide">
+                    {% csrf_token %}
+                    
+                    <!-- Avatar Section -->
+                    <div class="relative w-32 h-32 mx-auto mt-3 group">
+                        <img id="avatarPreview" src="{{ request.user.profile.avatar.url }}" 
+                             alt="Profile" class="w-32 h-32 rounded-full object-cover border-2 border-red-400">
+                        <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                             onclick="document.getElementById('avatarInput').click()">
+                            <i class="fas fa-camera text-white text-2xl"></i>
+                        </div>
+                        <input type="file" id="avatarInput" name="avatar" class="hidden" accept="image/*" onchange="previewAvatar(event)">
+                    </div>
+
+                    <!-- Profile Info -->
+                    <div class="px-6 mt-4 space-y-4">
+                        <!-- Username -->
+                        <div class="space-y-1">
+                            <label class="text-gray-500">Username</label>
+                            <div class="p-2 bg-gray-50 rounded-lg">
+                                {{ request.user.username }}
+                            </div>
+                        </div>
+
+                        <!-- Bio -->
+                        <div class="space-y-1">
+                            <label class="text-gray-500">Bio</label>
+                            <textarea name="bio" class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 scrollbar-custom" placeholder="Write something about yourself...">{{ request.user.profile.bio }}</textarea>
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="space-y-1">
+                            <label class="text-gray-500">Phone</label>
+                            <input type="tel" name="phone" value="{{ request.user.profile.phone }}" 
+                                   class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Enter your phone number">
+                        </div>
+
+                        <!-- Email -->
+                        <div class="space-y-1">
+                            <label class="text-gray-500">Email</label>
+                            <input type="email" name="email" value="{{ request.user.email }}" 
+                                    class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"  
+                                    placeholder="Enter your email">
+                                {% comment %} <div class="p-2 bg-gray-50 rounded-lg">
+                                    {{ request.user.email }}
+                                </div> {% endcomment %}
+                        </div>
+                    </div>
+
+                    <!-- Save Button -->
+                    <div class="p-4 border-t mt-4">
+                        <button type="submit" class="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+        
+        <!-- ✅ Profile Popup Friend -->
+        <div id="profilePopupFriend" class="fixed inset-0 bg-black bg-opacity-50 invisible opacity-0 flex items-start justify-center">
+            <div class="bg-white p-6 rounded-lg shadow-lg w-auto mt-14 mr-16">
+                <h2 class="text-lg font-semibold text-center mb-4">User Profile</h2>
+                <div class="flex flex-col items-center">
+                    <img id="popupAvatar" class="w-24 h-24 rounded-full border-2 border-gray-300 shadow-md object-cover" alt="User Avatar">
+                    <p id="popupUsername" class="mt-3 text-xl font-semibold"></p>
+                    <div class="w-96 mt-2 bg-gray-100 p-2 rounded-lg">
+                        <label for="popupEmail" class="mt-2 text-gray-500  font-semibold">Email</label>
+                        <p id="popupEmail" class="mt-1 text-gray-500 "></p>
+                    </div>
+                    <div class="w-96 mt-2 bg-gray-100 p-2 rounded-lg">
+                        <label for="popupBio" class="mt-2 text-gray-500  font-semibold">Bio</label>
+                        <p id="popupBio" class="mt-2 text-gray-500"></p>
+                    </div>
+                        
+                </div>
+                <button onclick="closeProfilePopup()" class="mt-4 px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg w-full">
+                    Close
+                </button>
+            </div>
+        </div>
+
+
+
+
+
+
+
+            <!-- ✅ Profile Popup Group -->
+            {% comment %} <div id="profilePopupGroup" class="fixed inset-0 bg-black bg-opacity-50 invisible opacity-0 flex items-start justify-center">
+                <div class="bg-white p-6 rounded-lg shadow-lg w-auto mt-14 mr-16">
+                    <h2 class="text-lg font-semibold text-center mb-4">Group Profile</h2>
+                    <div class="flex flex-col items-center">
+                        <img id="popupGroupAvatar" class="w-24 h-24 rounded-full border-2 border-gray-300 shadow-md object-cover" alt="Group Avatar">
+                        <p id="popupGroupName" class="mt-3 text-xl font-semibold"></p>
+                        
+                        
+                        
+                        <!-- Admin Field -->
+                        <div class="w-96 mt-2 bg-gray-100 p-2 rounded-lg">
+                            <label for="popupAdmin" class="mt-2 text-gray-500  font-semibold">Admin</label>
+                            <p id="popupAdmin" class="mt-1 text-gray-500"></p>
+                        </div>
+                        
+                        <!-- Bio Field -->
+                        <div class="w-96 mt-2 bg-gray-100 p-2 rounded-lg">
+                            <label for="popupGroupBio" class="mt-2 text-gray-500  font-semibold">Bio</label>
+                            <p id="popupGroupBio" class="mt-2 text-gray-500"></p>
+                        </div>
+                    </div>
+
+                    
+                    
+                    <!-- Close Button -->
+                    <button onclick="closeProfilePopup()" class="mt-4 px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg w-full">
+                        Close
+                    </button>
+                </div>
+            </div> {% endcomment %}
+
+            <!-- ✅ Profile Popup Group -->
+            <div id="profilePopupGroup" class="fixed inset-0 bg-black bg-opacity-50 invisible opacity-0 flex items-start justify-center">
+                <div class="bg-white p-6 rounded-lg shadow-lg w-auto mt-14 mr-16">
+                    <h2 class="text-lg font-semibold text-center mb-4">Group Profile</h2>
+                    <div class="flex flex-col items-center">
+
+                        <!-- Group Avatar (Editable for Admin) -->
+                        <div class="relative group">
+                            <img id="popupGroupAvatar" class="w-24 h-24 rounded-full border-2 border-gray-300 shadow-md object-cover" alt="Group Avatar">
+                            <div id="popupGroupAvatarEdit" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer invisible"
+                                onclick="document.getElementById('groupAvatarInput').click()">
+                                <i class="fas fa-camera text-white text-2xl"></i>
+                            </div>
+                            <input type="file" id="groupAvatarInput" class="hidden" accept="image/*" onchange="previewGroupAvatar(event)">
+                        </div>
+
+                        <!-- Group Name (Editable for Admin) -->
+                        <div class="w-96 p-2 rounded-lg text-center">
+                            <p id="popupGroupName" class="mt-3 text-xl font-semibold"></p>
+                            <input type="text" id="popupGroupNameEdit" class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 hidden">
+                        </div>
+
+                        <!-- Admin Field -->
+                        <div class="w-96 mt-2 bg-gray-100 p-2 rounded-lg">
+                            <label for="popupAdmin" class="mt-2 text-gray-500 font-semibold">Admin</label>
+                            <p id="popupAdmin" class="mt-1 text-gray-500"></p>
+                        </div>
+
+                        <!-- Bio Field (Editable for Admin) -->
+                        <div class="w-96 mt-2 bg-gray-100 p-2 rounded-lg">
+                            <label for="popupGroupBio" class="mt-2 text-gray-500 font-semibold">Bio</label>
+                            <p id="popupGroupBio" class="mt-2 text-gray-500"></p>
+                            <textarea id="popupGroupBioEdit" class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 hidden"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Save Button (Only visible for Admins) -->
+                    <button id="saveGroupProfile" onclick="saveGroupProfile()" 
+                            class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg w-full hidden">
+                        Save Changes
+                    </button>
+
+                    <!-- Close Button -->
+                    <button onclick="closeProfilePopup()" class="mt-2 px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg w-full">
+                        Close
+                    </button>
+                </div>
+            </div>
+
+
+
+
+
+        
+
+
+        <!-- 🎤 Voice Recording Popup -->
+        <div id="voiceRecorderPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center invisible opacity-0 transition-opacity duration-300">
+            <div class="bg-teal-200 p-4 rounded-3xl shadow-lg w-96 text-center">
+                <div class="flex flex-row items-center justify-center relative w-full">
+                    <h2 class="text-lg font-semibold absolute left-1/2 transform -translate-x-1/2">
+                        🎤 Voice Recorder
+                    </h2>
+                    <button id="closeVoicePopupButton" class="ml-auto text-red-600 rounded-lg hover:text-red-700">
+                        <i class="fa-solid fa-xmark text-2xl"></i>
+                    </button>    
+                </div>
+                <p id="recordingStatus" class="text-sm text-gray-500">Press record to start</p>
+
+                <!-- ✅ Audio playback -->
+                <audio id="audioPlayback" class="hidden w-full mt-3" controls controlsList="nodownload"></audio>
+
+
+                <div class="flex justify-center mt-4">
+                    <button id="startRecordingButton" class="px-6 py-3 bg-green-500 text-white rounded-full hover:bg-green-600"><i class="fa-solid fa-microphone-lines mr-2"></i>Start</button>
+                    <button id="stopRecordingButton" class="hidden px-6 py-3 bg-red-500 text-white rounded-full hover:bg-red-600"><i class="fa-solid fa-stop mr-2"></i>Stop</button>
+                    <button id="sendRecordingButton" class="hidden px-6 py-3 bg-blue-500 text-white rounded-full hover:bg-blue-600"><i class="fa-solid fa-paper-plane mr-2"></i>Send</button>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- ✅ Image Preview Modal -->
+        <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-90 invisible opacity-0 flex justify-center items-center transition-opacity duration-300">
+            <img id="modalImage" class="max-w-full max-h-full rounded-lg">
+            <button onclick="closeImageModal()" class="absolute top-5 right-5 text-white text-3xl">
+                <i class="fas fa-times"></i> <!-- Close Button -->
+            </button>
+        </div>
+        
+        <!-- Notifications Popup -->
+        <div id="notificationPopup" class="fixed inset-0 bg-black bg-opacity-50 invisible opacity-0 flex items-center">
+            <div class="bg-white p-6 rounded-lg shadow-lg w-auto mt-10 ml-16 max-h-96">
+                <div class="flex justify-between items-center p-3">
+                    <h2 class="text-lg font-semibold">Notifications</h2>
+                    <button onclick="toggleNotifications()" class="text-gray-500 hover:text-gray-700 text-xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="notificationList" class="w-96 bg-gray-100 p-2 rounded-lg max-h-96 overflow-y-auto divide-y">
+                    <!-- Notifications will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+
+
+        <script src="https://cdn.jsdelivr.net/npm/emoji-button@latest/dist/index.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/emoji-button@latest/dist/emoji-button.min.js"></script>
+
+        <script src="{% static 'js/chat.js' %}"></script>
+        <script>
+            
+            
+            function displayMessage(msg, friendAvatar) {
+                let isSentByMe = msg.is_sent_by_me ? 'justify-end' : 'justify-start';
+                let messageBg = msg.is_sent_by_me ? 'bg-teal-500' : 'bg-blue-500';
+                let senderAvatar = msg.is_sent_by_me ? "" : `<img src="${friendAvatar}" class="w-8 h-8 rounded-full mr-3 shadow-lg object-cover" alt="User">`;
+            
+            
+                // ✅ Remove the "No messages yet" message if it exists
+                let emptyMessage = document.querySelector("#messagesContainer p");
+                if (emptyMessage) emptyMessage.remove();
+            
+            
+            
+                // for audio field
+                let messageContent = "";
+                const emojiRegex = /^[\p{Emoji}\s]+$/u;
+                //let isOnlyEmojis = emojiRegex.test(msg.text.trim());
+                let isOnlyEmojis = msg.text && emojiRegex.test(msg.text.trim());
+
+
+                // ✅ Apply large font size if only emojis are present
+                let textSizeClass = isOnlyEmojis ? "text-4xl" : "text-lg";
+            
+                // ✅ Handle Voice Messages 🎤
+                if (msg.audio) {
+                    messageContent = `
+                        <audio controls class="w-64">
+                            <source src="${msg.audio}" type="audio/webm">
+                            Your browser does not support the audio element.
+                        </audio>
+                    `;
+                }
+                else if (msg.file_url && msg.file_type.startsWith("image/")) {
+                    messageContent = `
+                        <div class="${messageBg} p-2 rounded-lg relative">
+                            <!-- ✅ Image Preview (Click to Zoom) -->
+                            <img src="${msg.file_url}" class="max-w-xs rounded-lg cursor-pointer" alt="Sent Image" onclick="openImageModal('${msg.file_url}')">
+                
+                            <!-- ✅ Download Button -->
+                            <div class="absolute bottom-2 right-2 ${messageBg} bg-opacity-75 p-1 rounded">
+                                <a href="${msg.file_url}" download class="text-white text-sm px-2 py-1">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                }                
+                
+                else if (msg.file_url && msg.file_type.startsWith("video/")) {
+                    messageContent = `
+                        <div class="${messageBg} p-2 rounded-lg">
+                            <video controls preload="none" class="max-w-xs rounded-lg shadow-md">
+                                <source src="${msg.file_url}" type="${msg.file_type}">
+                                Your browser does not support the video element.
+                            </video>
+                        </div>
+                    `;
+                }
+                // ✅ Show PDF 📄
+                else if (msg.file_url && msg.file_type === "application/pdf") {
+                    let truncatedFileName = msg.file_name.length > 20 
+                    ? msg.file_name.substring(11, 25) + "..." 
+                    : msg.file_name;
+                    
+                    messageContent = `
+                        <div class="p-2 ${messageBg} rounded-lg flex items-center">
+                            <i class="fas fa-file-pdf text-yellow-400 text-2xl mr-2"></i>
+                            <a href="${msg.file_url}" target="_blank" class="text-white font-semibold hover:text-yellow-500">
+                                ${truncatedFileName}
+                            </a>
+                        </div>
+                    `;
+                }
+                // ✅ Show Word/Excel Documents 📂
+                else if (msg.file_url && (msg.file_type.includes("msword") || msg.file_type.includes("officedocument.spreadsheetml.sheet"))) {
+                    let truncatedFileName = msg.file_name.length > 20 
+                    ? msg.file_name.substring(11, 30) + "..." 
+                    : msg.file_name;
+                    
+                    messageContent = `
+                        <div class="${messageBg} p-2 rounded-lg flex items-center">
+                            <i class="fas fa-file-alt text-yellow-400 text-2xl mr-2"></i>
+                            <a href="${msg.file_url}" target="_blank" class="text-white font-semibold hover:text-yellow-500">
+                                ${truncatedFileName}
+                            </a>
+                        </div>
+                    `;
+                }
+                // ✅ Handle Other File Attachments 📂
+                else if (msg.file_url) {
+                    let truncatedFileName = msg.file_name.length > 20 
+                    ? msg.file_name.substring(11, 30) + "..." 
+                    : msg.file_name;
+                    messageContent = `
+                        <div class="${messageBg} p-2 rounded-lg flex items-center">
+                            <i class="fas fa-file-alt text-yellow-400 text-2xl mr-2"></i>
+                            <a href="${msg.file_url}" target="_blank" class="text-white font-semibold hover:text-yellow-500">
+                                ${truncatedFileName}
+                            </a>
+                        </div>
+                    `;
+                }
+                // ✅ Handle Text Messages 📄
+                else {
+                    let formattedText = (msg.text || "").replace(/\n/g, "<br>");
+                    // let formattedText = msg.text.replace(/\n/g, "<br>"); // ✅ Preserve new lines
+                    messageContent = `<div class="${messageBg} chat-bubble ${textSizeClass} text-white py-2 px-4 rounded-xl max-w-lg">
+                                        ${formattedText}
+                                    </div>`;
+                }
+                // last line audio added
+            
+            
+                // ✅ Skip if message is already in DOM
+                if (document.querySelector(`[data-message-id="${msg.id}"]`)) return;
+            
+                let messageHtml = `
+                   <div class="mb-4 flex ${isSentByMe} items-start" data-message-id="${msg.id}">
+                       ${senderAvatar}
+                       ${messageContent}
+                        <div class="flex flex-col">
+                            <span class="ml-2 text-xs text-gray-400">${msg.timestamp}</span>
+                            <span class="ml-2 text-xs text-gray-400">${msg.datestamp}</span>
+                        </div>
+                   </div>
+                `;
+            
+                messagesContainer.innerHTML += messageHtml;
+                messagesContainer.scrollTop = messagesContainer.scrollHeight; // ✅ Auto-scroll to latest message
+            
+            }
+
+            // ✅ Function to Open Image in Fullscreen Mode
+            function openImageModal(imageUrl) {
+                let modal = document.getElementById("imageModal");
+                let modalImage = document.getElementById("modalImage");
+
+                modalImage.src = imageUrl;
+                modal.classList.remove("invisible", "opacity-0"); // ✅ Make modal visible
+                modal.classList.add("opacity-100");
+            }
+
+            // ✅ Function to Close Image Modal
+            function closeImageModal() {
+                let modal = document.getElementById("imageModal");
+                
+                modal.classList.remove("opacity-100");
+                modal.classList.add("opacity-0");
+
+                // ✅ Delay adding `invisible` to match animation
+                setTimeout(() => {
+                    modal.classList.add("invisible");
+                }, 300); // Matches `transition-opacity duration-300`
+            }
+
+    
+            <!-- Load Emoji Picker Library -->
+            document.addEventListener('DOMContentLoaded', () => {
+                // Initialize Emoji Picker
+                const picker = new EmojiButton({
+                    autoHide: false, // Prevent picker from hiding automatically
+                });
+        
+                // When user selects an emoji, insert it into the textarea
+                picker.on('emoji', selection => {
+                    let input = document.getElementById('messageInput');
+                    input.value += selection; // Append emoji to the input field
+                });
+        
+                // Show/Hide picker when the button is clicked
+                document.getElementById('emojiBtn').addEventListener('click', () => {
+                    picker.pickerVisible ? picker.hidePicker() : picker.showPicker(document.getElementById('emojiBtn'));
+                });
+            });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            function displayGroupMessage(msg, senderAvatar, senderName) {
+                let isSentByMe = msg.is_sent_by_me ? 'justify-end' : 'justify-start';
+                let messageBg = msg.is_sent_by_me ? 'bg-teal-500' : 'bg-blue-500';
+                let groupsenderAvatar = msg.is_sent_by_me ? '' : `<img src="${senderAvatar}" class="w-8 h-8 rounded-full mr-3 shadow-lg object-cover" alt="User">`;
+            
+                // ✅ Remove the "No messages yet" message if it exists
+                let emptyMessage = document.querySelector("#messagesContainer p");
+                if (emptyMessage) emptyMessage.remove();
+            
+                // ✅ Detect emojis
+                let messageContent = "";
+                const emojiRegex = /^[\p{Emoji}\s]+$/u;
+                // let isOnlyEmojis = emojiRegex.test(msg.text.trim());
+                let isOnlyEmojis = msg.text && emojiRegex.test(msg.text.trim());
+
+                let textSizeClass = isOnlyEmojis ? "text-4xl" : "text-lg";
+            
+
+                // ✅ Handle Voice Messages 🎤
+                if (msg.audio) {
+                    messageContent = `
+                        <audio controls class="w-64">
+                            <source src="${msg.audio}" type="audio/webm">
+                            Your browser does not support the audio element.
+                        </audio>
+                    `;
+                }
+                // ✅ Show Image 📸
+                else if (msg.file_url && msg.file_type.startsWith("image/")) {
+                    messageContent = `
+                        <div class="${messageBg} p-2 rounded-lg relative">
+                            <img src="${msg.file_url}" class="max-w-xs rounded-lg cursor-pointer" alt="Sent Image" onclick="openImageModal('${msg.file_url}')">
+                            <div class="absolute bottom-2 right-2 ${messageBg} bg-opacity-75 p-1 rounded">
+                                <a href="${msg.file_url}" download class="text-white text-sm px-2 py-1">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                }
+                // ✅ Show Video 🎥
+                else if (msg.file_url && msg.file_type.startsWith("video/")) {
+                    messageContent = `
+                        <div class="${messageBg} p-2 rounded-lg">
+                            <video controls preload="none" class="max-w-xs rounded-lg shadow-md">
+                                <source src="${msg.file_url}" type="${msg.file_type}">
+                                Your browser does not support the video element.
+                            </video>
+                        </div>
+                    `;
+                }
+                // ✅ Show PDF 📄
+                else if (msg.file_url && msg.file_type === "application/pdf") {
+                    let truncatedFileName = msg.file_name.length > 20 
+                    ? msg.file_name.substring(11, 25) + "..." 
+                    : msg.file_name;
+                    
+                    messageContent = `
+                        <div class="p-2 ${messageBg} rounded-lg flex items-center">
+                            <i class="fas fa-file-pdf text-yellow-400 text-2xl mr-2"></i>
+                            <a href="${msg.file_url}" target="_blank" class="text-white font-semibold hover:text-yellow-500">
+                                ${truncatedFileName}
+                            </a>
+                        </div>
+                    `;
+                }
+                // ✅ Show Word/Excel Documents 📂
+                else if (msg.file_url && (msg.file_type.includes("msword") || msg.file_type.includes("officedocument.spreadsheetml.sheet"))) {
+                    let truncatedFileName = msg.file_name.length > 20 
+                    ? msg.file_name.substring(11, 30) + "..." 
+                    : msg.file_name;
+                    
+                    messageContent = `
+                        <div class="${messageBg} p-2 rounded-lg flex items-center">
+                            <i class="fas fa-file-alt text-yellow-400 text-2xl mr-2"></i>
+                            <a href="${msg.file_url}" target="_blank" class="text-white font-semibold hover:text-yellow-500">
+                                ${truncatedFileName}
+                            </a>
+                        </div>
+                    `;
+                }
+                // ✅ Handle Other File Attachments 📂
+                else if (msg.file_url) {
+                    let truncatedFileName = msg.file_name.length > 20 
+                    ? msg.file_name.substring(11, 30) + "..." 
+                    : msg.file_name;
+                    messageContent = `
+                        <div class="${messageBg} p-2 rounded-lg flex items-center">
+                            <i class="fas fa-file-alt text-yellow-400 text-2xl mr-2"></i>
+                            <a href="${msg.file_url}" target="_blank" class="text-white font-semibold hover:text-yellow-500">
+                                ${truncatedFileName}
+                            </a>
+                        </div>
+                    `;
+                }
+                // ✅ Handle Text Messages 📄
+                else {
+                    let formattedText = (msg.text || "").replace(/\n/g, "<br>");
+
+                    // let formattedText = msg.text.replace(/\n/g, "<br>"); // ✅ Preserve new lines
+                    messageContent = `<div class="${messageBg} chat-bubble ${textSizeClass} text-white py-2 px-4 rounded-xl max-w-lg">
+                                        ${formattedText}
+                                    </div>`;
+                }
+                
+            
+                // ✅ Skip if message already exists
+                if (document.querySelector(`[data-message-id="${msg.id}"]`)) return;
+            
+                
+
+                let messageHtml = `
+                    <div>${!msg.is_sent_by_me ? `<span class="text-gray-400 text-sm">${senderName}</span>` : ''}</div>
+                    <div class="mb-4 flex ${isSentByMe} items-start" data-message-id="${msg.id}">
+                       ${groupsenderAvatar}
+                       ${messageContent}
+                        <div class="flex flex-col">
+                            <span class="ml-2 text-xs text-gray-400">${msg.timestamp}</span>
+                            <span class="ml-2 text-xs text-gray-400">${msg.datestamp}</span>
+                        </div>
+                    </div>
+                `;
+                
+                messagesContainer.innerHTML += messageHtml;
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            }
+           
+        </script>
+{% comment %}   
+// ✅ Construct message HTML with sender name
+                let messageHtml = `
+                   <div class="mb-4 flex ${isSentByMe} items-start" data-message-id="${msg.id}">
+                       ${senderAvatar}
+                       <div>
+                           ${!msg.is_sent_by_me ? `<span class="text-gray-400 text-sm">${senderName}</span>` : ''}
+                           ${messageContent}
+                           <span class="ml-2 text-sm text-gray-400">${msg.timestamp}</span>
+                       </div>
+                   </div>
+                `;
+
+// ✅ Handle Text Messages 📄
+                else {
+                    let formattedText = msg.text.replace(/\n/g, "<br>");
+                    messageContent = `<div class="${messageBg} chat-bubble ${textSizeClass} text-white py-2 px-4 rounded-xl max-w-lg">
+                                            ${formattedText}
+                                    </div>`;
+                }      
+        // ✅ Modal Functions for Image Preview
+        function openImageModal(imageUrl) {
+            let modal = document.getElementById("imageModal");
+            let modalImage = document.getElementById("modalImage");
+            modalImage.src = imageUrl;
+            modal.classList.remove("invisible", "opacity-0");
+            modal.classList.add("opacity-100");
+        }
+        
+        function closeImageModal() {
+            let modal = document.getElementById("imageModal");
+            modal.classList.remove("opacity-100");
+            modal.classList.add("opacity-0");
+            setTimeout(() => modal.classList.add("invisible"), 300);
+        }
+         {% endcomment %}
+    </body>
+</html>

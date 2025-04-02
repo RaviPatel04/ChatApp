@@ -1,0 +1,134 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+    <title>{% block title %}{% endblock %} | Ripple</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="ie=edge">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
+		<link rel="apple-touch-icon" sizes="180x180" href="{% static "images/apple-touch-icon.png" %}">
+		<link rel="icon" type="image/png" sizes="32x32" href="{% static "images/favicon-32x32.png" %}">
+		<link rel="icon" type="image/png" sizes="16x16" href="{% static "images/favicon-16x16.png" %}">
+		<link rel="manifest" href="{% static "images/site.webmanifest" %}">
+		{% tailwind_css %}
+	</head>
+
+	<body class="bg-white font-poppins leading-normal tracking-normal">
+
+		<!-- Navbar -->
+		<nav class="fixed w-full bg-blue-600 text-white py-6 z-50">
+			<div class="container mx-auto flex justify-between items-center px-6 text-lg">
+				<a href="{% url "home" %}" class="flex items-center">
+					<img class="h-16 w-38 ml-20" src="{% static 'images/logo.png' %}" alt="Logo">
+				</a>
+				<ul class="hidden md:flex space-x-6 items-center gap-3 mr-20">
+					<li>
+						<a href="{% url "home" %}#services" class="inline-block text-lg font-semibold  transition-all duration-500 hover:pr-2 hover:pb-2 hover:underline decoration-sky-500/30 hover:decoration-white">Services</a>
+					</li>
+					<li class="group">
+						<a href="{% url "contact" %}" class="inline-block text-lg font-semibold transition-all duration-500 hover:pr-2 hover:pb-2 hover:underline decoration-sky-500/30 hover:decoration-white">Contact</a>
+					</li>
+					{% if user.is_authenticated %}
+					<li class="group">
+						<a href="{% url "logout_view" %}" class="inline-block text-lg font-semibold transition-all duration-500 hover:pr-2 hover:pb-2 hover:underline decoration-sky-500/30 hover:decoration-white">Logout</a>
+					</li>
+					{% else %}
+					<li class="group">
+						<a href="{% url "login_view" %}" class="inline-block text-lg font-semibold transition-all duration-500 hover:pr-2 hover:pb-2 hover:underline decoration-sky-500/30 hover:decoration-white">Login</a>
+					</li>
+					{% endif %}
+
+					{% if user.is_authenticated %}
+					<a href="{% url "chat" %}"><button class="bg-opacity-20 bg-white text-white px-6 py-2 rounded-full font-semibold hover:text-blue-600 hover:bg-opacity-100 transition-all duration-500 ease-in-out">Let's Chat</button></a>
+					{% else %}
+					<a href="{% url "register_view" %}"><button class="bg-opacity-20 bg-white text-white px-6 py-2 rounded-full font-semibold hover:text-blue-600 hover:bg-opacity-100 transition-all duration-500 ease-in-out">Try it free</button></a>
+					{% endif %}
+				</ul>
+			</div>
+		</nav>
+		
+		<!--Main Content-->
+		{% block content %}{% endblock %}
+
+
+		<!-- Footer -->
+		<footer class="bg-blue-600 text-white py-10">
+			<div class="container flex flex-col md:flex-row justify-stretch px-10 mt-12 space-x-28">
+				<div class="ml-32">
+					<h3 class="text-3xl font-bold mb-10">RIPPLE</h3>
+					<p class="opacity-70">The last team chat you will <br>never need.</p>
+				</div>
+				<div class="grid grid-cols-2 md:grid-cols-4 gap-12 mt-6 md:mt-0">
+					<div>
+						<h4 class="font-semibold mb-10">Help</h4>
+						<ul class="space-y-4 opacity-70">
+							<li>Support</li>
+							<li>Knowledge</li>
+							<li>Tutorials</li>
+						</ul>
+					</div>
+					<div>
+						<h4 class="font-semibold mb-10">Features</h4>
+						<ul class="space-y-4 opacity-70">
+							<li>Audio Chat</li>
+							<li>Team Chat</li>
+							<li>File Sharing</li>
+						</ul>
+					</div>
+					<div>
+						<h4 class="font-semibold mb-10">Company</h4>
+						<ul class="space-y-4 opacity-70">
+							<li>About Us</li>
+							<li>Careers</li>
+							<li><a href="{% url "contact" %}">Contact Us</a></li>
+						</ul>
+					</div>
+					<div>
+						<h4 class="font-semibold mb-10">Contact Us</h4>
+						<ul class="space-y-4 opacity-70">
+							<li>info@chatapp.com</li>
+							<li>009 007 005 3</li>
+							<li>Ahmedabad</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<div class="flex space-x-6 mt-20 mx-40">
+				
+				<a href="https://www.facebook.com/" target="_blank">
+					<div class="w-12 h-12 rounded-full bg-white flex items-center justify-center hover:bg-[#1877F2] transition-all duration-500 ease-in-out group">
+						<i class="fa-brands fa-facebook-f text-[#1877F2] text-2xl group-hover:text-white transition-all duration-500 ease-in-out"></i> <!-- Facebook Icon -->
+					</div>
+				</a>
+
+				<a href="https://x.com/" target="_blank">
+					<div class="w-12 h-12 rounded-full bg-white flex items-center justify-center hover:bg-black transition-all duration-500 ease-in-out group">
+						<i class="fa-brands fa-x-twitter text-black text-2xl group-hover:text-white transition-all duration-500 ease-in-out"></i> <!-- Twitter Icon -->
+					</div>
+				</a>
+
+				<a href="https://www.linkedin.com/" target="_blank">
+					<div class="w-12 h-12 rounded-full bg-white flex items-center justify-center hover:bg-[#0077B5] transition-all duration-500 ease-in-out group">
+						<i class="fa-brands fa-linkedin-in text-[#0077B5] text-2xl group-hover:text-white transition-all duration-500 ease-in-out"></i> <!-- LinkedIn Icon -->
+					</div>
+				</a>	
+
+				<a href="https://www.instagram.com/" target="_blank">
+					<div class="w-12 h-12 rounded-full bg-white flex items-center justify-center hover:bg-[linear-gradient(to_right,_#F58529,_#E7CA79,_#DD2A7B,_#923BC4,_#737CDC)] transition-all duration-500 ease-in-out group">
+						<i class="fa-brands fa-instagram text-[#E4405F] text-2xl group-hover:text-white transition-all duration-500 ease-in-out"></i> <!-- Instagram Icon -->
+					</div>
+				</a>
+			</div>    
+			<hr class="h-0.5 opacity-50 border-0 rounded-sm my-10 bg-white mx-32">
+			<div class="text-center">
+				<p class="opacity-70 text-lg">&copy; Copyright Ripple Inc.</p>
+			</div>
+		</footer>
+	</body>
+</html>
+
