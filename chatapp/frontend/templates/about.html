@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}About Us{% endblock %}
+{% load static %}
+
+{% block content %}
+<div class="bg-cover bg-center w-full h-full">
+    <!-- Background Image Section -->
+    <div class="mt-28 absolute w-full h-96 bg-cover bg-center" style="background-image: url('{% static 'images/about.jpg' %}');">
+    </div>
+    <div class="absolute inset-0 bg-black bg-opacity-70 w-full"></div>
+
+    <!-- Page Header -->
+    <div class="relative flex flex-col items-center text-center">
+        <h1 class="mt-40 font-bold text-5xl text-white mb-5">About Ripple Chat</h1>
+        <p class="text-white w-1/2">
+            At Ripple Chat, we're dedicated to connecting people around the globe with fast, secure, and innovative communication solutions. Our platform is designed to foster genuine connections and inspire creative collaborations.
+        </p>
+    </div>
+
+    <!-- Content Section -->
+    <section class="py-24">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 gap-10">
+                <div class="relative bg-gray-50 p-11 rounded-2xl shadow-lg">
+                    <h2 class="text-indigo-600 font-manrope text-4xl font-semibold leading-10 mb-6">Our Story</h2>
+                    <p class="text-gray-600 text-lg leading-7 mb-6">
+                        Ripple Chat was born out of a passion for innovative communication and a belief that staying connected should be both seamless and enjoyable. What began as a small project driven by a dedicated team has grown into a platform that empowers millions of users worldwide.
+                    </p>
+                    <h2 class="text-indigo-600 font-manrope text-4xl font-semibold leading-10 mb-6">Our Mission</h2>
+                    <p class="text-gray-600 text-lg leading-7 mb-6">
+                        Our mission is to bridge distances, break down communication barriers, and build communities through secure and creative digital interactions. We strive to constantly innovate, ensuring our platform remains at the forefront of technology and user experience.
+                    </p>
+                    <h2 class="text-indigo-600 font-manrope text-4xl font-semibold leading-10 mb-6">Our Values</h2>
+                    <ul class="list-disc list-inside text-gray-600 text-lg leading-7">
+                        <li><strong>Innovation:</strong> Pushing boundaries to create cutting-edge solutions.</li>
+                        <li><strong>Community:</strong> Bringing people together to share ideas and experiences.</li>
+                        <li><strong>Integrity:</strong> Maintaining transparency and trust in all we do.</li>
+                        <li><strong>Excellence:</strong> Committed to delivering the highest quality service.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

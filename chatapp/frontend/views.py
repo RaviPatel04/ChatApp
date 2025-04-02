@@ -25,6 +25,9 @@ from .models import ContactUs, Profile, Message, User, FriendRequest, Friendship
 def home(request):
     return render(request, "home.html")
 
+def about(request):
+    return render(request, "about.html")
+
 
 
 def register_view(request):

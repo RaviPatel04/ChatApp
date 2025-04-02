@@ -1161,6 +1161,10 @@ select {
   margin-top: auto;
 }
 
+.mt-60 {
+  margin-top: 15rem;
+}
+
 .block {
   display: block;
 }
@@ -1395,6 +1399,14 @@ select {
 
 .resize-none {
   resize: none;
+}
+
+.list-inside {
+  list-style-position: inside;
+}
+
+.list-disc {
+  list-style-type: disc;
 }
 
 .grid-cols-1 {
@@ -1758,6 +1770,11 @@ select {
      object-fit: cover;
 }
 
+.object-fill {
+  -o-object-fit: fill;
+     object-fit: fill;
+}
+
 .p-1 {
   padding: 0.25rem;
 }
@@ -1784,6 +1801,10 @@ select {
 
 .p-6 {
   padding: 1.5rem;
+}
+
+.p-11 {
+  padding: 2.75rem;
 }
 
 .px-10 {
