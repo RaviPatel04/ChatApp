@@ -3,8 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserChangeForm
 from django import forms
-from .models import Profile, ContactUs, FriendRequest, Friendship, Message,  Notification
-
+from .models import Profile, ContactUs, FriendRequest, Friendship, Message,  Notification, Group, GroupMessage, GroupRequest, GroupProfile
 
 
 class CustomUserChangeForm(UserChangeForm):
@@ -114,16 +113,8 @@ class MessageAdmin(admin.ModelAdmin):
         return obj.text[:30] + ("..." if len(obj.text) > 30 else "")
     short_text.short_description = "Message"
 
-    # def formatted_timestamp(self, obj):
-    #     return obj.timestamp.strftime("%b %d, %Y - %I:%M %p")
-    # formatted_timestamp.short_description = "Sent At"
 
 
-
-
-
-
-#26/02/25
 @admin.register(FriendRequest)
 class FriendRequestAdmin(admin.ModelAdmin):
     list_display = ('sender', 'receiver', 'status', 'created_at', 'updated_at')
@@ -152,11 +143,6 @@ class NotificationAdmin(admin.ModelAdmin):
     raw_id_fields = ('user', 'sender', 'related_request')
 
 
-
-#27/03/2025
-
-from .models import Group, GroupMessage, GroupRequest, GroupProfile
-from .models import Group, GroupMessage, GroupRequest, GroupProfile
 
 @admin.register(GroupProfile)
 class GroupProfileAdmin(admin.ModelAdmin):
@@ -187,14 +173,6 @@ class GroupMessageAdmin(admin.ModelAdmin):
         return (obj.text[:30] + '...') if len(obj.text) > 30 else obj.text
     
     short_text.short_description = "Message Preview"
-    
-# @admin.register(GroupRequest)
-# class GroupRequestAdmin(admin.ModelAdmin):
-#     list_display = ('sender', 'group', 'status', 'created_at', 'updated_at')
-#     list_filter = ('status', 'created_at')
-#     search_fields = ('sender__username', 'group__name')
-
-
 
 
 @admin.register(GroupRequest)
@@ -203,13 +181,3 @@ class GroupRequestAdmin(admin.ModelAdmin):
     list_filter = ('group', 'created_at')
     search_fields = ('invited_user__username', 'group__name')
     
-
-
-
-
-
-
-
-
-
-# 31/03/2025

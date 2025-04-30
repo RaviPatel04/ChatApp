@@ -16,7 +16,13 @@ import logging
 import json
 import re
 import os
-from .models import ContactUs, Profile, Message, User, FriendRequest, Friendship, Notification, Group, GroupMessage, GroupRequest
+from .models import ContactUs, Profile, Message, User, FriendRequest, Friendship, Notification, Group, GroupMessage, GroupRequest, GroupProfile
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from cloudinary.utils import cloudinary_url
+from cloudinary.uploader import destroy
+from cloudinary.uploader import upload
+from cloudinary.exceptions import Error as CloudinaryError
 
 
 
@@ -29,6 +35,29 @@ def about(request):
     return render(request, "about.html")
 
 
+def contact(request):
+    ist = ZoneInfo("Asia/Kolkata")
+    if request.method == "POST":
+        form = ContactUSForm(request.POST)
+        if form.is_valid():
+            contact = ContactUs(
+                name = form.cleaned_data['name'],
+                email=form.cleaned_data['email'],
+                phone=form.cleaned_data['phone'],
+                communication_method=form.cleaned_data['communication_method'],
+                message=form.cleaned_data['message'],
+            )
+            contact.save()
+            messages.success(request, "Your message has been sent successfully!")
+            return redirect('home')
+        else:
+            messages.error(request, "Please correct the errors below.")
+
+    else:
+        form = ContactUSForm()
+    return render(request, "contact.html", {'form': form})
+
+
 
 def register_view(request):
     ist = ZoneInfo("Asia/Kolkata")
@@ -39,7 +68,7 @@ def register_view(request):
         confirm_password = request.POST['confirm_password']
 
         if password != confirm_password:
-            messages.error(request, "Passwords do not match!!")
+            messages.error(request, "Password and Confirm Password must be the same.")
             return redirect("register_view")
         
         if User.objects.filter(username=username).exists():
@@ -48,7 +77,7 @@ def register_view(request):
         
         user = User.objects.create_user(username=username, email=email, password=password)
         user.save()
-        messages.success(request, "Account created successfully!!")
+        # messages.success(request, "Account created successfully!!")
         return redirect("login_view")
     
     return render(request, "register_view.html")
@@ -75,7 +104,7 @@ def login_view(request):
 
         if user is not None:
             login(request, user)
-            messages.success(request, "You have been logged In successfully!!")
+            # messages.success(request, "You have been logged In successfully!!")
             return redirect("chat")
         else:
             messages.error(request, "Invalid username/email or password!!")
@@ -88,36 +117,8 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    messages.success(request, "You have been logged In successfully!!")
+    # messages.success(request, "You have been logged Out successfully!!")
     return redirect("login_view")
-
-
-
-
-
-def contact(request):
-    ist = ZoneInfo("Asia/Kolkata")
-    if request.method == "POST":
-        form = ContactUSForm(request.POST)
-        if form.is_valid():
-            contact = ContactUs(
-                name = form.cleaned_data['name'],
-                email=form.cleaned_data['email'],
-                phone=form.cleaned_data['phone'],
-                communication_method=form.cleaned_data['communication_method'],
-                message=form.cleaned_data['message'],
-            )
-            contact.save()
-            messages.success(request, "Your message has been sent successfully!")
-            return redirect('home')
-        else:
-            messages.error(request, "Please correct the errors below.")
-
-    else:
-        form = ContactUSForm()
-    return render(request, "contact.html", {'form': form})
-
-
 
 
 
@@ -151,9 +152,6 @@ def update_profile(request):
     
     except Exception as e:
         return JsonResponse({"success": False, "message": f"Error: {str(e)}"}, status=500)
-
-
-
 
 
 
@@ -207,9 +205,38 @@ def get_messages(request, friend_id):
 
     messages_list = []
     for msg in messages:
-        file_url = msg.file.url if msg.file else None
-        file_name = msg.file.name if msg.file else None
-        file_type = mimetypes.guess_type(msg.file.path)[0] if msg.file else None 
+        file_url = msg.file.build_url(secure=True) if msg.file else None
+        # file_name = msg.file.name if msg.file else None
+
+        # print(f"DEBUG - File URL: {file_url}")  # Check server logs
+
+
+        if msg.file:
+            file_name = msg.file.public_id.split('/')[-1] if msg.file.public_id else "file"
+            file_extension = msg.file.format if hasattr(msg.file, 'format') else None
+
+            if file_extension:
+                file_type = mimetypes.guess_type(f"dummy.{file_extension}")[0]
+            else:
+                # Try to get it from the original filename or resource_type
+                file_type = msg.file.resource_type if hasattr(msg.file, 'resource_type') else None
+                # Map Cloudinary resource types to MIME types
+                if file_type == 'image':
+                    file_type = 'image/jpeg'  # Default image type
+                elif file_type == 'video':
+                    file_type = 'video/mp4'   # Default video type
+                elif file_type == 'raw' or file_type == 'auto':
+                    # For PDF and other documents
+                    if file_url and file_url.endswith('.pdf'):
+                        file_type = 'application/pdf'
+                    else:
+                        file_type = 'application/octet-stream'  # Generic binary type
+        else:
+            file_name = None
+            file_type = None
+        
+        # print(f"DEBUG - File NAME: {file_name}")
+        # print(f"DEBUG - File TYPE: {file_type}")
 
 
         messages_list.append(
@@ -259,6 +286,7 @@ def send_message(request):
                 "receiver": message.receiver.username,
                 "text": message.text,
                 "timestamp": localtime(message.timestamp).astimezone(ist).strftime("%I:%M %p"),
+                "datestamp": localtime(message.timestamp).astimezone(ist).strftime("%B %d, %Y"),
                 "is_sent_by_me": True
             }
         })
@@ -277,7 +305,7 @@ def get_user_profile(request, user_id):
 
     return JsonResponse({
         "username": user.username,
-        "avatar": profile.avatar.url if profile.avatar else "../media/avatars/default.png",
+        "avatar": profile.avatar.url if profile.avatar else "/avatars/default.png",
         "bio": profile.bio,
         "email":user.email
     })
@@ -285,97 +313,75 @@ def get_user_profile(request, user_id):
 
 
 
-
-
-
-# 24/02/25
 @login_required
 def send_voice_message(request):
     ist = ZoneInfo("Asia/Kolkata")
     if request.method == "POST" and request.FILES.get("voice_message"):
         sender = request.user
-        voice_message = request.FILES["voice_message"]
+        voice_file = request.FILES["voice_message"]
         group_id = request.POST.get("group_id")
         receiver_id = request.POST.get("receiver_id")
 
+        
+        folder_path = "voice_messages"
+        if group_id:
+            folder_path = "group_voice_messages"
+
+        try:
+            upload_result = upload(
+                voice_file,
+                resource_type="video",  # required for audio/webm
+                folder=folder_path
+            )
+        except CloudinaryError as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=500)
 
 
         # ✅ Handle Group Voice Message
         if group_id:
             group = get_object_or_404(Group, id=group_id)
-            message = GroupMessage.objects.create(sender=sender, group=group, audio=voice_message)
+            message = GroupMessage.objects.create(sender=sender, group=group, audio=upload_result["secure_url"])
 
-            return JsonResponse({
-                "success": True,
-                "message": {
-                    "id": message.id,
-                    "audio": message.audio.url,
-                    "timestamp": localtime(message.timestamp).astimezone(ist).strftime("%I:%M %p"),
-                    "is_sent_by_me": True
-                }
-            })
+            # return JsonResponse({
+            #     "success": True,
+            #     "message": {
+            #         "id": message.id,
+            #         "audio": message.audio.url,
+            #         "timestamp": localtime(message.timestamp).astimezone(ist).strftime("%I:%M %p"),
+            #         "datestamp": localtime(message.timestamp).astimezone(ist).strftime("%B %d, %Y"),
+            #         "is_sent_by_me": True
+            #     }
+            # })
         # ✅ Handle Friend Voice Message
         elif receiver_id:
             receiver = get_object_or_404(User, id=receiver_id)
-            message = Message.objects.create(sender=sender, receiver=receiver, audio=voice_message)
+            message = Message.objects.create(sender=sender, receiver=receiver, audio=upload_result["secure_url"])
 
-            return JsonResponse({
-                "success": True,
-                "message": {
-                    "id": message.id,
-                    "audio": message.audio.url,
-                    "timestamp": localtime(message.timestamp).astimezone(ist).strftime("%I:%M %p"),
-                    "is_sent_by_me": True
-                }
-            })
+            # return JsonResponse({
+            #     "success": True,
+            #     "message": {
+            #         "id": message.id,
+            #         "audio": message.audio.url,
+            #         "timestamp": localtime(message.timestamp).astimezone(ist).strftime("%I:%M %p"),
+            #         "datestamp": localtime(message.timestamp).astimezone(ist).strftime("%B %d, %Y"),
+            #         "is_sent_by_me": True
+            #     }
+            # })
         else:
             return JsonResponse({"success": False, "error": "No valid recipient provided"}, status=400)
         
-        # receiver = get_object_or_404(User, id=receiver_id)
-        # message = Message.objects.create(sender=sender, receiver=receiver, audio=voice_message)
-        
-        # return JsonResponse({
-        #     "success": True,
-        #     "message": {
-        #         "id": message.id,
-        #         "audio": message.audio.url,
-        #         "timestamp": localtime(message.timestamp).strftime("%I:%M %p"),
-        #         "is_sent_by_me": True
-        #     }
-        # })
-
+        return JsonResponse({
+            "success": True,
+            "message": {
+                "id": message.id,
+                "audio": message.audio,
+                "timestamp": localtime(message.timestamp).astimezone(ist).strftime("%I:%M %p"),
+                "datestamp": localtime(message.timestamp).astimezone(ist).strftime("%B %d, %Y"),
+                "is_sent_by_me": True
+            }
+        })
+    
     return JsonResponse({"success": False}, status=400)
-
-# @login_required
-# def send_voice_message(request):
-#     if request.method == "POST" and request.FILES.get("voice_message"):
-#         sender = request.user
-#         voice_message = request.FILES["voice_message"]
-#         receiver_id = request.POST.get("receiver_id")
-#         group_id = request.POST.get("group_id")
-
-#         if receiver_id and not group_id:
-#             # Sending to individual friend
-#             receiver = get_object_or_404(User, id=receiver_id)
-#             message = Message.objects.create(sender=sender, receiver=receiver, audio=voice_message)
-#         elif group_id and not receiver_id:
-#             # Sending to a group
-#             group = get_object_or_404(Group, id=group_id)
-#             message = GroupMessage.objects.create(sender=sender, group=group, audio=voice_message)
-#         else:
-#             return JsonResponse({"success": False, "error": "Invalid request."}, status=400)
-
-#         return JsonResponse({
-#             "success": True,
-#             "message": {
-#                 "id": message.id,
-#                 "audio": message.audio.url,
-#                 "timestamp": localtime(message.timestamp).strftime("%I:%M %p"),
-#                 "is_sent_by_me": True
-#             }
-#         })
-
-#     return JsonResponse({"success": False, "error": "Invalid request method or missing audio file."}, status=400)
 
 
 
@@ -396,14 +402,31 @@ def send_attachment(request):
             # Handle direct message
             receiver = get_object_or_404(User, id=receiver_id)
             message = Message.objects.create(sender=sender, receiver=receiver, file=file)
+
+            file_url = message.file.build_url(secure=True) if message.file else None
+
+            # print(f"DEBUG - File URL: {file_url}")
+
+            if message.file:
+                file_name = message.file.public_id.split('/')[-1] if message.file.public_id else "file"
+            else:
+                file_name = None
+            if file_url and file_name:
+                file_extension = file_name.split('.')[-1] if '.' in file_name else ''
+                file_type = mimetypes.guess_type(f"dummy.{file_extension}")[0] if file_extension else None
+            else:
+                file_type = None
+
+
             response_message = {
                 "id": message.id,
                 "sender": message.sender.username,
                 "receiver": message.receiver.username,
-                "file_url": message.file.url,
-                "file_name": message.file.name,
-                "file_type": file.content_type,
+                "file_url": file_url,
+                "file_name": file_name,
+                "file_type": file_type,
                 "timestamp": localtime(message.timestamp).astimezone(ist).strftime("%I:%M %p"),
+                "datestamp": localtime(message.timestamp).astimezone(ist).strftime("%B %d, %Y"),
                 "is_sent_by_me": True
             }
         elif group_id:
@@ -415,14 +438,30 @@ def send_attachment(request):
                 return JsonResponse({"success": False, "error": "You are not a member of this group"}, status=403)
 
             message = GroupMessage.objects.create(sender=sender, group=group, file=file)
+
+            file_url = message.file.build_url(secure=True) if message.file else None
+
+            # print(f"DEBUG - File URL: {file_url}")
+
+            if message.file:
+                file_name = message.file.public_id.split('/')[-1] if message.file.public_id else "file"
+            else:
+                file_name = None
+            if file_url and file_name:
+                file_extension = file_name.split('.')[-1] if '.' in file_name else ''
+                file_type = mimetypes.guess_type(f"dummy.{file_extension}")[0] if file_extension else None
+            else:
+                file_type = None
+
             response_message = {
                 "id": message.id,
                 "sender": message.sender.username,
                 "group": message.group.name,
-                "file_url": message.file.url,
-                "file_name": message.file.name,
-                "file_type": file.content_type,
+                "file_url": file_url,
+                "file_name": file_name,
+                "file_type": file_type,
                 "timestamp": localtime(message.timestamp).astimezone(ist).strftime("%I:%M %p"),
+                "datestamp": localtime(message.timestamp).astimezone(ist).strftime("%B %d, %Y"),
                 "is_sent_by_me": True
             }
         else:
@@ -430,26 +469,6 @@ def send_attachment(request):
         
         return JsonResponse({"success": True, "message": response_message})
         
-        # if not receiver_id or not group_id:
-        #     return JsonResponse({"success": False, "error": "Receiver not found"}, status=400)
-
-        # receiver = get_object_or_404(User, id=receiver_id)
-        # Save the message with the attached file
-        # message = Message.objects.create(sender=sender, receiver=receiver, file=file)
-
-        # return JsonResponse({
-        #     "success": True,
-        #     "message": {
-        #         "id": message.id,
-        #         "sender": message.sender.username,
-        #         "receiver": message.receiver.username,
-        #         "file_url": message.file.url,
-        #         "file_name": message.file.name,
-        #         "file_type": file.content_type,
-        #         "timestamp": message.timestamp.strftime("%I:%M %p"),
-        #         "is_sent_by_me": True
-        #     }
-        # })
     return JsonResponse({"success": False}, status=400)
 
 
@@ -493,7 +512,7 @@ def send_friend_request(request):
                     # Update the rejected request to pending again
                     existing_request.status = 'pending'
                     existing_request.save()
-                    return JsonResponse({'status': 'success', 'message': 'Friend request sent'})
+                    return JsonResponse({'status': 'success', 'message': '🤝Friend request sent Successfully!!'})
             
             # Create new friend request
             FriendRequest.objects.create(
@@ -502,10 +521,10 @@ def send_friend_request(request):
                 status='pending'
             )
             
-            return JsonResponse({'status': 'success', 'message': 'Friend request sent'})
+            return JsonResponse({'status': 'success', 'message': '🤝Friend request sent Successfully!!'})
         
         except User.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'User not found'})
+            return JsonResponse({'status': 'error', 'message': 'User not found or Check Username and Email'})
     
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
 
@@ -712,8 +731,6 @@ def get_notification_count(request):
 
 
 
-
-# 27/03/2025
 @login_required
 @csrf_exempt
 def create_group(request):
@@ -733,30 +750,12 @@ def create_group(request):
     return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=400)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 @login_required
 def get_group_messages(request, group_id):
-    ist = ZoneInfo("Asia/Kolkata")
     group = get_object_or_404(Group, id=group_id)
         
     ist = ZoneInfo("Asia/Kolkata") 
 
-    # Check membership
-    # if request.user not in group.members.all():
-    #     return JsonResponse({"messages": []})
-    
     
     if not group.members.filter(id=request.user.id).exists():
         return JsonResponse({"messages": []})
@@ -765,16 +764,48 @@ def get_group_messages(request, group_id):
     messages_list = []
 
     for msg in messages_qs:
-        file_url = msg.file.url if msg.file else None
-        file_name = msg.file.name if msg.file else None
-        file_type = mimetypes.guess_type(msg.file.path)[0] if msg.file and msg.file.path else None 
-        # if msg.file:
-        #     file_type = mimetypes.guess_type(msg.file.path)[0] or ""
+        file_url = msg.file.build_url(secure=True) if msg.file else None
+        # file_name = msg.file.name if msg.file else None
+
+        # print(f"DEBUG - File URL: {file_url}")
 
 
-         # ✅ Get sender avatar (Assuming avatar is stored in `profile.avatar.url`)
-        sender_avatar = msg.sender.profile.avatar.url if hasattr(msg.sender, "profile") and msg.sender.profile.avatar else "/static/default-avatar.png"
+        if msg.file:
+            file_name = msg.file.public_id.split('/')[-1] if msg.file.public_id else "file"
+            file_extension = msg.file.format if hasattr(msg.file, 'format') else None
 
+            if file_extension:
+                file_type = mimetypes.guess_type(f"dummy.{file_extension}")[0]
+            else:
+                # Try to get it from the original filename or resource_type
+                file_type = msg.file.resource_type if hasattr(msg.file, 'resource_type') else None
+                # Map Cloudinary resource types to MIME types
+                if file_type == 'image':
+                    file_type = 'image/jpeg'  # Default image type
+                elif file_type == 'video':
+                    file_type = 'video/mp4'   # Default video type
+                elif file_type == 'raw' or file_type == 'auto':
+                    # For PDF and other documents
+                    if file_url and file_url.endswith('.pdf'):
+                        file_type = 'application/pdf'
+                    else:
+                        file_type = 'application/octet-stream'  # Generic binary type
+        else:
+            file_name = None
+            file_type = None
+        
+        # print(f"DEBUG - File NAME: {file_name}")
+        # print(f"DEBUG - File TYPE: {file_type}")
+
+
+        
+    
+        # ✅ Get sender avatar (Assuming avatar is stored in `profile.avatar.url`)
+        sender_avatar = (
+            msg.sender.profile.avatar.url
+            if hasattr(msg.sender, "profile") and msg.sender.profile.avatar
+            else "/avatar/group_default.png"
+        )
 
         messages_list.append({
             "id": msg.id,
@@ -821,6 +852,7 @@ def send_group_message(request):
                 # "receiver": message.receiver.username,
                 "text": message.text,
                 "timestamp": localtime(message.timestamp).astimezone(ist).strftime("%I:%M %p"),
+                "datestamp": localtime(message.timestamp).astimezone(ist).strftime("%B %d, %Y"),
                 "is_sent_by_me": True
             }
         })
@@ -841,21 +873,10 @@ def handle_group_invite(request):
         if notification.type != 'group_invite':
             return JsonResponse({'success': False, 'message': 'Not a group invite.'})
 
-        # Suppose we store group_id in an "extra_data" JSON field or something similar
-        # If not, you might store group info in a separate model or handle differently
-        # group_id = notification.extra_data.get('group_id')
-        # For brevity, let's say we find the group by name, or you store it somewhere else
-        # This depends on how you structure your code.
-
-        # Example: we do not have extra_data in your current Notification model,
-        # so you might store group info in a separate model or parse the message. 
-        # We'll do a simplified approach:
-        # group_name = f"somehow parse from notification" 
-        # group = get_object_or_404(Group, name=group_name)
         group = notification.group_request.group
         group_name = group.name
 
-        print(f"Group Name:----------------- {group_name}")
+        # print(f"Group Name:----------------- {group_name}")
 
         if action == 'accept':
             group.members.add(request.user)
@@ -937,7 +958,7 @@ def send_group_invite(request):
             group_request=group_request,           
         )
 
-        print(f"group---------------------------{group_request.group.name}")
+        # print(f"group--------------------------->{group_request.group.name}")
         return JsonResponse({'success': True, 'message': f'Invitation sent to {invited_user.username} for {group.name}.'})
     return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=400)
 
@@ -1028,12 +1049,6 @@ def handle_group_request(request):
 
 
 
-
-
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from .models import Group, GroupProfile
-
 @login_required
 def get_group_profile(request, group_id):
     ist = ZoneInfo("Asia/Kolkata")
@@ -1045,25 +1060,13 @@ def get_group_profile(request, group_id):
     # Return the group profile details in JSON response
     return JsonResponse({
         "group_name": group.name,
-        "group_avatar": group_profile.group_avatar.url if group_profile.group_avatar else "../media/group_avatars/group_default.png",
+        "group_avatar": group_profile.group_avatar.url if group_profile.group_avatar else "/group_avatars/group_default.png",
         "group_bio": group_profile.group_bio,
         "group_admin": group_profile.group_admin.username,
         "is_admin": is_admin
     })
 
 
-
-
-
-
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-import os
-from .models import Group, GroupProfile
 
 @csrf_exempt
 @login_required
@@ -1093,17 +1096,101 @@ def update_group_profile(request, group_id):
 
             # Delete the old avatar if it exists
             if group_profile.group_avatar:
-                old_avatar_path = group_profile.group_avatar.path
-                if os.path.exists(old_avatar_path):
-                    os.remove(old_avatar_path)
+                try:
+                    # Get public_id to delete
+                    public_id = group_profile.group_avatar.public_id
+                    destroy(public_id)
+                except Exception as e:
+                    print(f"Warning: Failed to delete old avatar - {e}")
 
             # Save new avatar
-            avatar_path = f"group_avatars/{group.id}/{avatar_file.name}"
-            saved_path = default_storage.save(avatar_path, ContentFile(avatar_file.read()))
-            group_profile.group_avatar = saved_path  # Update model field
+            # avatar_path = f"group_avatars/{group.id}/{avatar_file.name}"
+            # saved_path = default_storage.save(avatar_path, ContentFile(avatar_file.read()))
+            # group_profile.group_avatar = saved_path  # Update model field
+
+            # ✅ Save new avatar to Cloudinary
+            group_profile.group_avatar = avatar_file
 
         group.save()
         group_profile.save()
         return JsonResponse({"success": True, "message": "Group profile updated successfully!"})
 
     return JsonResponse({"error": "Invalid request method."}, status=400)
+
+
+
+
+
+
+
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.models import User
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.urls import reverse
+
+def forgot_password_view(request):
+    if request.method == "POST":
+        email = request.POST['email']
+        associated_users = User.objects.filter(email=email)
+
+        if associated_users.exists():
+            for user in associated_users:
+                token = default_token_generator.make_token(user)
+                uid = urlsafe_base64_encode(force_bytes(user.pk))
+                reset_link = request.build_absolute_uri(reverse('reset_password_view', kwargs={'uidb64': uid, 'token': token}))
+
+                subject = "Password Reset Request"
+                message = render_to_string("reset_email.html", {
+                    'user': user,
+                    'reset_link': reset_link,
+                })
+
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+            
+            messages.success(request, "A password reset link has been sent to your email.")
+        else:
+            messages.error(request, "No account is associated with this email.")
+
+        return redirect("forgot_password_view")
+
+    return render(request, "forgot_password.html")
+
+
+
+
+
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth.tokens import default_token_generator
+
+def reset_password_view(request, uidb64, token):
+    from django.contrib.auth.models import User
+
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == "POST":
+            password = request.POST["password"]
+            confirm_password = request.POST["confirm_password"]
+            if password == confirm_password:
+                user.set_password(password)
+                user.save()
+                messages.success(request, "Password reset successfully! You can now log in.")
+                # return redirect("login_view")
+            else:
+                messages.error(request, "Passwords do not match.")
+        return render(request, "reset_password_form.html", {'validlink': True})
+    else:
+        messages.error(request, "Invalid or expired reset link.")
+        return render(request, "reset_password_form.html", {'validlink': False})
+
+
+def terms_and_conditions(request):
+    return render(request, 'terms.html')

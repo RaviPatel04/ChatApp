@@ -5,11 +5,9 @@
 
 {% block content %}
 
-
-
 <div class="bg-cover bg-center w-full h-full">
     
-    <div class="mt-28 absolute w-full h-96 bg-cover bg-center" style="background-image: url('{% static "images/contact.jpg" %}');">
+    <div class="mt-28 absolute w-full h-96 bg-cover bg-center" style="background-image: url('{% static 'images/contact.jpg' %}');">
 
     </div>
     <div class="absolute inset-0 bg-black bg-opacity-70 w-full"></div>
@@ -26,7 +24,7 @@
                 <div class="lg:mb-0 mb-10">
                     <div class="group w-full h-full">
                         <div class="relative h-full">
-                            <img src="{% static "images/contact_box.png" %}" alt="ContactUs tailwind section" class="w-full h-full lg:rounded-l-2xl rounded-2xl bg-blend-multiply bg-indigo-700 object-cover"/>
+                            <img src="{% static 'images/contact_box.png' %}" alt="ContactUs tailwind section" class="w-full h-full lg:rounded-l-2xl rounded-2xl bg-blend-multiply bg-indigo-700 object-cover"/>
                             <h1 class="font-manrope text-white text-4xl font-bold leading-10 absolute top-11 left-11">Contact us</h1>
                             <div class="absolute bottom-0 w-full lg:p-11 p-5">
                                 <div class="bg-white rounded-lg p-6 block">
@@ -62,21 +60,21 @@
                         <div class="mb-7">
                             <input type="text" name="name" class="w-full h-12 text-gray-600 placeholder-gray-400 shadow-sm bg-transparent text-lg font-normal leading-7 rounded-full border {% if form.name.errors %}border-red-500{% else %}border-gray-200{% endif %} focus:outline-none pl-4" placeholder="Name" value="{{ form.name.value|default:'' }}">
                             {% if form.name.errors %}
-                                <p class="text-red-500 text-sm mt-1">{{ form.name.errors.0 }}</p>
+                                <p class="text-red-500 text-sm mt-1 ml-4">{{ form.name.errors.0 }}</p>
                             {% endif %}
                         </div>
                 
                         <div class="mb-7">
                             <input type="email" name="email" class="w-full h-12 text-gray-600 placeholder-gray-400 shadow-sm bg-transparent text-lg font-normal leading-7 rounded-full border {% if form.email.errors %}border-red-500{% else %}border-gray-200{% endif %} focus:outline-none pl-4" placeholder="Email" value="{{ form.email.value|default:'' }}">
                             {% if form.email.errors %}
-                                <p class="text-red-500 text-sm mt-1">{{ form.email.errors.0 }}</p>
+                                <p class="text-red-500 text-sm mt-1 ml-4">{{ form.email.errors.0 }}</p>
                             {% endif %}
                         </div>
                 
                         <div class="mb-7">
                             <input type="tel" name="phone" class="w-full h-12 text-gray-600 placeholder-gray-400 shadow-sm bg-transparent text-lg font-normal leading-7 rounded-full border {% if form.phone.errors %}border-red-500{% else %}border-gray-200{% endif %} focus:outline-none pl-4" placeholder="Phone" value="{{ form.phone.value|default:'' }}">
                             {% if form.phone.errors %}
-                                <p class="text-red-500 text-sm mt-1">{{ form.phone.errors.0 }}</p>
+                                <p class="text-red-500 text-sm mt-1 ml-4">{{ form.phone.errors.0 }}</p>
                             {% endif %}
                         </div>
                 
@@ -93,14 +91,14 @@
                                 </div>
                             </div>
                             {% if form.communication_method.errors %}
-                                <p class="text-red-500 text-sm mt-1">{{ form.communication_method.errors.0 }}</p>
+                                <p class="text-red-500 text-sm mt-1 ml-4">{{ form.communication_method.errors.0 }}</p>
                             {% endif %}
                         </div>
                 
                         <div class="mb-7">
                             <textarea name="message" class="w-full h-16 text-gray-600 placeholder-gray-400 bg-transparent text-lg shadow-sm font-normal leading-7 rounded-2xl border {% if form.message.errors %}border-red-500{% else %}border-gray-200{% endif %} focus:outline-none pl-4" placeholder="Message">{{ form.message.value|default:'' }}</textarea>
                             {% if form.message.errors %}
-                                <p class="text-red-500 text-sm mt-1">{{ form.message.errors.0 }}</p>
+                                <p class="text-red-500 text-sm mt-1 ml-4">{{ form.message.errors.0 }}</p>
                             {% endif %}
                         </div>
                 

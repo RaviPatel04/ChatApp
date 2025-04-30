@@ -16,11 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
+admin.site.site_header = "Ripple ChatApp"
+admin.site.site_title = "Ripple"
+admin.site.index_title = "Ripple Dashboard"
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('chatadmin/', admin.site.urls),
     path("__reload__/", include("django_browser_reload.urls")),
     path("", include("frontend.urls")),
-
-]
+]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

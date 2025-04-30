@@ -6,8 +6,7 @@
 {% block content %}
 <div class="bg-cover bg-center w-full h-full">
     
-    <div class="mt-28 absolute w-full h-96 bg-cover bg-center" style="background-image: url('{% static "images/register_view.jpg" %}');">
-    </div>
+    <div class="mt-28 absolute w-full h-96 bg-cover bg-center" style="background-image: url('{% static 'images/register_view.jpg' %}');"></div>
     <div class="absolute inset-0 bg-black bg-opacity-50 w-full"></div>
 
     <div class="relative flex flex-col items-center text-center">
@@ -19,21 +18,39 @@
         <div class="mx-auto max-w-xl px-4 sm:px-6 lg:px-8">
             <div class="relative bg-gray-50 p-5 lg:p-11 rounded-2xl shadow-lg">
                 <h2 class="text-indigo-600 font-manrope text-4xl font-semibold leading-10 mb-11">Join us today!</h2>
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-2 ml-4 text-red-500" role="alert">
+                        {{ message }}
+                        {% comment %} <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> {% endcomment %}
+                        </div>
+                    {% endfor %}
+                {% endif %}
                 <form method="POST">
                     {% csrf_token %}
-                    <input type="username" name="username" minlength="6" class="w-full h-12 text-gray-600 placeholder-gray-400 shadow-sm bg-transparent text-lg font-normal leading-7 rounded-full border border-gray-200 focus:outline-none pl-4 mb-6" placeholder="Username" required>
-                    <input type="email" name="email" class="w-full h-12 text-gray-600 placeholder-gray-400 shadow-sm bg-transparent text-lg font-normal leading-7 rounded-full border border-gray-200 focus:outline-none pl-4 mb-6" placeholder="Email" required>
-                    <input type="password" name="password" minlength="8" class="w-full h-12 text-gray-600 placeholder-gray-400 shadow-sm bg-transparent text-lg font-normal leading-7 rounded-full border border-gray-200 focus:outline-none pl-4 mb-6" placeholder="Password" required>
-                    <input type="password" name="confirm_password" class="w-full h-12 text-gray-600 placeholder-gray-400 shadow-sm bg-transparent text-lg font-normal leading-7 rounded-full border border-gray-200 focus:outline-none pl-4 mb-6" placeholder="Confirm Password" required>
+                    <input type="username" name="username" minlength="6" class="w-full h-12 text-gray-600 placeholder-gray-400 shadow-sm bg-transparent text-lg font-normal leading-7 rounded-full border border-gray-200 focus:outline-none pl-4 mb-6" placeholder="Username" autocomplete="username" required>
+                    <input type="email" name="email" class="w-full h-12 text-gray-600 placeholder-gray-400 shadow-sm bg-transparent text-lg font-normal leading-7 rounded-full border border-gray-200 focus:outline-none pl-4 mb-6" placeholder="Email" autocomplete="username" required>
+                    <div class="relative">
+                        <input type="password" name="password" id="passwordInput" minlength="8" class="w-full h-12 text-gray-600 placeholder-gray-400 shadow-sm bg-transparent text-lg font-normal leading-7 rounded-full border border-gray-200 focus:outline-none pl-4 mb-6" placeholder="Password" autocomplete="new-password" required>
+                        <button type="button" onclick="togglePassword()" class="absolute right-4 top-3 text-gray-500 focus:outline-none">
+                            <i id="toggleIcon" class="fa-regular fa-eye text-xl"></i>
+                        </button>
+                    </div>
+                    <input type="password" name="confirm_password" class="w-full h-12 text-gray-600 placeholder-gray-400 shadow-sm bg-transparent text-lg font-normal leading-7 rounded-full border border-gray-200 focus:outline-none pl-4 mb-6" placeholder="Confirm Password" autocomplete="new-password" required>
                     <div class="flex items-center mb-6">
                         <input type="checkbox" name="terms" id="terms" class="w-4 h-4 text-indigo-500 border-gray-300 focus:ring-indigo-500 mr-2" required>
-                        <label for="terms" class="text-gray-500 text-sm">I agree to the <a href="#" class="text-indigo-600 hover:underline">Terms and Conditions</a></label>
+                        <label for="terms" class="text-gray-500 text-sm">I agree to the <a href="{% url 'terms_and_conditions' %}" class="text-indigo-600 hover:underline">Terms and Conditions</a></label>
                     </div>
                     <button type="submit" class="w-full h-12 text-white font-semibold rounded-full transition-all duration-500 ease-in-out hover:bg-transparent hover:text-blue-600 border-2 hover:border-blue-600 bg-indigo-600">Register</button>
                 </form>
-                <p class="text-gray-500 text-center mt-6">Already have an account? <a href="{% url "login_view" %}" class="text-indigo-600 hover:underline">Login</a></p>
+                <p class="text-gray-500 text-center mt-6">Already have an account? <a href="{% url 'login_view' %}" class="text-indigo-600 hover:underline">Login</a></p>
             </div>
         </div>
     </section>
 </div>
+
+
+
+
+
 {% endblock %}

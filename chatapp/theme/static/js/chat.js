@@ -82,10 +82,8 @@ document.getElementById('profileForm').addEventListener('submit', async function
 
 
 
-
-
 function loadMessages(friendId, friendName, friendAvatar) {
-    console.log("🔹 Loading messages for friend ID:", friendId, friendName);
+    // console.log("🔹 Loading messages for friend ID:", friendId, friendName);
     // ✅ Clear active state for both friends & groups
     document.querySelectorAll(".friend-item, .group-item").forEach(item => {
         item.classList.remove("bg-gray-50");
@@ -145,7 +143,7 @@ function handleEnterKey(event) {
         if (event.shiftKey) {
             // ✅ Prevents message sending
             messageInput.style.height = "auto";  // ✅ Reset height for recalculation
-            messageInput.style.height = Math.min(messageInput.scrollHeight, 96) + "px"; // ✅ Max height = 96px (h-24)
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 96) + "px";
             return;
         }
         event.preventDefault();  // ✅ Prevents default Enter behavior (form submission)
@@ -171,6 +169,8 @@ function fetchMessages() {
     fetch(`/get-messages/${currentFriendId}/`)
         .then(response => response.json())
         .then(data => {
+
+            // console.log("Messages received:", data.messages);
 
             if (!data.messages || data.messages.length === 0) {
                 messagesContainer.innerHTML = "<p class='text-center text-gray-500 mt-10'>No messages yet. Start the conversation!</p>"; // ✅ Show empty message
@@ -240,7 +240,6 @@ function sendMessage() {
 
 
 
-
 function closeChat() {
     let chatWindow = document.getElementById("chatWindow");
     let welcomeMessage = document.getElementById("welcomeMessage");
@@ -253,7 +252,7 @@ function closeChat() {
             welcomeMessage.classList.remove("invisible", "opacity-0");
             welcomeMessage.classList.add("opacity-100");
         }
-    }, 300); // Matches `transition-opacity duration-300`
+    }, 300);
 
     setTimeout(() => {
         // ✅ Remove highlight from all friends
@@ -277,8 +276,8 @@ function closeChat() {
 function openProfilePopup() {
     // if (!currentFriendId) return; // ✅ Don't open if no friend is selected
 
-    console.log("currentFriendId: ",currentFriendId);
-    console.log("currentGroupId: ",currentGroupId);
+    // console.log("currentFriendId: ",currentFriendId);
+    // console.log("currentGroupId: ",currentGroupId);
 
 
     if (currentFriendId) {
@@ -298,7 +297,7 @@ function openProfilePopup() {
     }
 
     if (currentGroupId) {
-        console.log(currentGroupId);
+        // console.log(currentGroupId);
         // Function to fetch group profile based on groupId
         
         fetch(`/get-group-profile/${currentGroupId}/`)
@@ -382,7 +381,9 @@ function saveGroupProfile() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert("Group profile updated successfully!");
+            console.log("groupdata:", data);
+            
+            alert("☑️Group profile updated successfully!");
             window.location.reload();
             // openProfilePopup();
         } else {
@@ -531,33 +532,6 @@ document.addEventListener("DOMContentLoaded", () => {
             sendVoiceMessage(formData, "/send-voice-message/");
         }
 
-        // fetch("/send-voice-message/", {
-        //     method: "POST",
-        //     body: formData,
-        //     headers: {
-        //         "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
-        //     }
-        // })
-        //     .then(response => response.json())
-        //     .then(data => {
-        //         if (data.success) {
-        //             console.log("✅ Voice message sent!");
-
-        //             // ✅ Show the sent voice message immediately
-        //             // displayVoiceMessage(data.message);
-
-        //             closeVoicePopup();
-
-        //             // ✅ Reset UI elements
-        //             // ✅ Reset recording UI but keep popup open
-        //             resetRecordingUI();
-
-        //             // ✅ Allow new recording
-        //             // document.getElementById("startRecordingButton").classList.remove("hidden");
-        //         } else {
-        //             console.error("❌ Error sending voice message:", data.error);
-        //         }
-        //     });
     });
 
     // ✅ Open Popup when Mic Button is Clicked
@@ -571,35 +545,35 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     
-function sendVoiceMessage(formData, url) {
-    fetch(url, {
-        method: "POST",
-        body: formData,
-        headers: {
-            "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            console.log("✅ Voice message sent!");
-
-            // ✅ Show the sent voice message immediately
-            if (currentGroupId) {
-                displayGroupMessage(data.message);
-            } else {
-                displayMessage(data.message);
+    function sendVoiceMessage(formData, url) {
+        fetch(url, {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
             }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log("✅ Voice message sent!");
 
-            closeVoicePopup();
-            // ✅ Reset recording UI
-            resetRecordingUI();
-        } else {
-            console.error("❌ Error sending voice message:", data.error);
-        }
-    })
-    .catch(error => console.error("❌ Network error:", error));
-}
+                // ✅ Show the sent voice message immediately
+                if (currentGroupId) {
+                    displayGroupMessage(data.message);
+                } else {
+                    displayMessage(data.message);
+                }
+
+                closeVoicePopup();
+                // ✅ Reset recording UI
+                resetRecordingUI();
+            } else {
+                console.error("❌ Error sending voice message:", data.error);
+            }
+        })
+        .catch(error => console.error("❌ Network error:", error));
+    }
 });
 
 
@@ -669,7 +643,7 @@ function sendFriendRequest() {
     const email = document.getElementById("friendEmail").value.trim();
     
     if (!username || !email) {
-        showAlert("Please enter both username and email", "error");
+        alert("Please enter both username and email", "error");
         return;
     }
     
@@ -686,14 +660,14 @@ function sendFriendRequest() {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'success') {
-            showAlert(data.message, "success");
+            alert(data.message);
             closeAddFriendPopup();
         } else {
-            showAlert(data.message, "error");
+            alert(data.message);
         }
     })
     .catch(error => {
-        showAlert("An error occurred. Please try again.", "error");
+        alert("An error occurred. Please try again.");
         console.error('Error:', error);
     });
 }
@@ -972,19 +946,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-// 27/03/2025
 function openAddGroupPopup() {
     const popup = document.getElementById("addGroupPopup");
     popup.classList.remove("hidden");
@@ -1104,21 +1065,7 @@ function handleGroupRequest(requestId, action, notificationId) {
     .then(response => response.json())
     .then(data => {
         console.log("Response from handle_group_request:", data);
-        // if (data.success) {
-        //     alert(data.message);
-        //     // Remove notification from UI
-        //     const notifElem = document.getElementById(`notification-${notificationId}`);
-        //     if (notifElem) {
-        //         notifElem.remove();
-        //     }
-
-        //     // Delete the notification completely instead of just marking as read
-        //     fetch(`/notifications/${notificationId}/delete/`, {
-        //         method: 'POST'
-        //     })
-        //     .catch(error => {
-        //         console.error('Error deleting notification:', error);
-        //     });
+        
         if (data.success) {
             showAlert(data.message, "success");
             
@@ -1154,77 +1101,9 @@ function handleGroupRequest(requestId, action, notificationId) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// function loadGroupMessages(groupId, groupName) {
-//     console.log("🔹 Loading messages for group:", groupId);
-
-//     currentGroupId = groupId;
-
-//     document.getElementById("chatUsername").textContent = groupName;
-//     document.getElementById("messagesContainer").innerHTML = "";
-
-//     fetch(`/get-group-messages/${groupId}/`)
-//         .then(response => response.json())
-//         .then(data => {
-//             data.messages.forEach(msg => {
-//                 displayMessage(msg, "");
-//             });
-//         });
-// }
-// function sendGroupMessage() {
-//     let messageInput = document.getElementById("messageInput");
-//     let messageText = messageInput.value.trim();
-
-//     if (!messageText || !currentGroupId) return;
-
-//     fetch("/send-group-message/", {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({ group_id: currentGroupId, text: messageText })
-//     })
-//     .then(response => response.json())
-//     .then(data => {
-//         if (data.success) {
-//             messageInput.value = "";
-//             displayMessage(data.message, "");
-//         }
-//     });
-// }
-
-
-
-
-
-
-
-//27/03/2025
-
-
 // Similar to loadMessages but for groups
 function loadGroupMessages(groupId, groupName, GroupAvatar) {
-    console.log("🔹 Loading group messages for:",groupId, groupName);
+    // console.log("🔹 Loading group messages for:",groupId, groupName);
     // ✅ Clear active state for both friends & groups
     document.querySelectorAll(".friend-item, .group-item").forEach(item => {
         item.classList.remove("bg-gray-50");
@@ -1232,7 +1111,7 @@ function loadGroupMessages(groupId, groupName, GroupAvatar) {
 
     currentGroupId = groupId;
     currentGroupName = groupName;
-    console.log("Current Group ID:", currentGroupId);
+    // console.log("Current Group ID:", currentGroupId);
 
     // Hide welcome message, show chat window
     let chatWindow = document.getElementById("chatWindow");
@@ -1252,21 +1131,6 @@ function loadGroupMessages(groupId, groupName, GroupAvatar) {
     messagesContainer.innerHTML = "";
 
     fetchGroupMessages();
-    // // fetch messages
-    // fetch(`/get-group-messages/${groupId}/`)
-    // .then(res => res.json())
-    // .then(data => {
-    //     if (!data.messages || data.messages.length === 0) {
-    //         messagesContainer.innerHTML = "<p class='text-center text-gray-500 mt-10'>No messages yet in this group.</p>";
-    //         return;
-    //     }
-    //     data.messages.forEach(msg => {
-    //         displayMessage(msg, ""); // Reuse your existing displayMessage but pass empty avatar or adapt it
-    //     });
-    //     messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    // })
-    // .catch(err => console.error("Error loading group messages:", err));
-
 
     // ✅ Remove highlight from all friends
     document.querySelectorAll(".group-item").forEach(group => {
@@ -1276,7 +1140,7 @@ function loadGroupMessages(groupId, groupName, GroupAvatar) {
     // ✅ Add highlight to the selected friend
     let selectedGroup = document.querySelector(`.group-item[data-group-id="${groupId}"]`);
     if (selectedGroup) {
-        selectedGroup.classList.add("bg-gray-50"); // ✅ Highlight with blue background
+        selectedGroup.classList.add("bg-gray-50");
     }
 
     // ✅ Ensure "Enter Key" Event Listener is Attached
@@ -1290,30 +1154,9 @@ function loadGroupMessages(groupId, groupName, GroupAvatar) {
         }
     }, 200);  // ✅ Ensures input field is available before attaching event    
 
-    // If you want polling, set an interval to re-fetch group messages
-    // if (pollingInterval) clearInterval(pollingInterval);
-    // pollingInterval = setInterval(() => {
-    //     fetchGroupMessages();
-    // }, 3000);
     if (pollingInterval) clearInterval(pollingInterval);
     pollingInterval = setInterval(fetchGroupMessages, 3000);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1347,13 +1190,7 @@ function fetchGroupMessages() {
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }
 
-            // data.messages.forEach(msg => {
-            //     // If we haven't already displayed it, display it
-            //     if (!document.querySelector(`[data-message-id="${msg.id}"]`)) {
-            //     displayMessage(msg, "");
-            //     }
-            // });
-        
+           
         })
         .catch(err => console.error("Error fetching group messages:", err));
 }
@@ -1369,7 +1206,7 @@ function sendGroupMessage() {
         console.error("Error: No group selected!");
         return;
     }
-    console.log("Sending group message to Group ID:", currentGroupId);
+    // console.log("Sending group message to Group ID:", currentGroupId);
 
     let messageInput = document.getElementById("messageInput");
     let messageText = messageInput.value.trim();
@@ -1423,14 +1260,6 @@ function selected() {
 
 
 
-
-
-
-
-
-
-
-
 // Switching to Groups
 function openGroup(groupId, groupName, GroupAvatar, groupAdminUsername) {
     // Set the current group ID
@@ -1458,39 +1287,6 @@ function openFriend(friendId, friendName, friendAvatar) {
 }
 
 
-
-
-// function openGroupProfilePopup() {
-//     if (!currentFriendId) return; // ✅ Don't open if no friend is selected
-
-//     fetch(`/get-user-profile/${currentFriendId}/`)
-//         .then(response => response.json())
-//         .then(data => {
-//             document.getElementById("popupAvatar").src = data.avatar;
-//             document.getElementById("popupUsername").textContent = data.username;
-//             document.getElementById("popupEmail").textContent = data.email;
-//             document.getElementById("popupBio").textContent = data.bio || "No bio available.";
-
-//             let popup = document.getElementById("profilePopupFriend");
-//             popup.classList.remove("invisible", "opacity-0");
-//             popup.classList.add("opacity-100");
-//         })
-//         .catch(error => console.error("❌ Error fetching profile:", error));
-// }
-
-
-// function openProfilePopupOrGroup(id, name, avatarUrl, type) {
-//     // Conditional logic based on type
-//     if (type === 'group') {
-//         openGroupProfilePopup(id, name, avatarUrl);  // Open group profile
-//     } else if (type === 'friend') {
-//         openProfilePopup(id, name, avatarUrl);  // Open friend profile
-//     } else {
-//         console.error("Invalid type! Must be 'group' or 'friend'.");
-//     }
-// }
-
-
 function showAddMemberButton(groupAdminUsername) {
     let isAdmin = document.getElementById("isAdmin")?.textContent.trim();
     let groupAdmin = groupAdminUsername;
@@ -1498,13 +1294,41 @@ function showAddMemberButton(groupAdminUsername) {
 
     // Compare the usernames instead of Boolean values
     if (isAdmin === groupAdmin) {
-        console.log("✅ User is admin, showing button!");
+        // console.log("✅ User is admin, showing button!");
         addMemberButton.style.display = "flex";
     } else {
-        console.log("❌ User is NOT admin, hiding button.");
+        // console.log("❌ User is NOT admin, hiding button.");
         addMemberButton.style.display = "none";
     }
 }
 
 
 
+function togglePassword() {
+    const passwordInput = document.getElementById("passwordInput");
+    const eyeIcon = document.getElementById("eyeIcon");
+
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        eyeIcon.innerHTML = `
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a10.054 10.054 0 012.982-4.419M15 12a3 3 0 00-4.243-4.243M9.88 9.88A3 3 0 0115 12m-6.121 0A3 3 0 0012 15m9-3a10.05 10.05 0 01-1.125 3.825M3 3l18 18" />
+        `;
+    } else {
+        passwordInput.type = "password";
+        eyeIcon.innerHTML = `
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        `;
+    }
+}
+
+document.getElementById("homeButton").addEventListener("click", function (event) {
+    event.preventDefault();
+    const chatList = document.getElementById("chatlisthide");
+    if (chatList) {
+        chatList.classList.toggle("hidden");
+    }
+});

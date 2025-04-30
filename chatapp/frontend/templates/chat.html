@@ -79,9 +79,6 @@
             <!-- Sidebar -->
             <div class="w-20 bg-white border-r border-gray-300 flex flex-col items-center pb-5">
                 <div class="space-y-8 m-5">
-                    {% comment %} <a href="{% url "home" %}"><button class="p-3 bg-gray-200 rounded-lg text-gray-700">
-                        <img src="{% static "images/logo_chat.png" %}" alt="">
-                    </button></a> {% endcomment %}
 
                     <!-- Profile Button -->
                     <div class="relative group flex justify-center mt-1">
@@ -107,7 +104,7 @@
 
                     <!-- Home Button -->
                     <div class="relative group flex justify-center">
-                        <button class="w-12 h-12 bg-gray-200 rounded-lg text-gray-700">
+                        <button id="homeButton" class="w-12 h-12 bg-gray-200 rounded-lg text-gray-700">
                             <i class="fas fa-comments text-xl"></i>
                         </button>
                         <span class="absolute left-16 -translate-x-1/2 -top-5 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
@@ -127,36 +124,14 @@
                     </div>
 
                     <!-- Setting Button -->
-                    <div class="relative group flex justify-center">
+                    {% comment %} <div class="relative group flex justify-center">
                         <button class="w-12 h-12 bg-gray-200 rounded-lg text-gray-700">
                             <i class="fas fa-cog text-xl"></i>
                         </button>
                         <span class="absolute left-16 -translate-x-1/2 -top-5 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
                             Settings
                         </span>
-                    </div>
-                
-                    {% comment %} <!-- Groups Button -->
-                    <div class="relative group flex justify-center">
-                        <button class="w-12 h-12 bg-gray-200 rounded-lg text-gray-700">
-                            <i class="fas fa-users text-xl"></i>
-                        </button>
-                        <span class="absolute left-16 -translate-x-1/2 -top-5 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
-                            Groups
-                        </span>
-                    </div>
-                
-                    <!-- Archive Button -->
-                    <div class="relative group flex justify-center">
-                        <button class="w-12 h-12 bg-gray-200 rounded-lg text-gray-700">
-                            <i class="fas fa-archive text-xl"></i>
-                        </button>
-                        <span class="absolute w-max left-20 -translate-x-1/2 -top-5 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
-                            Archive chats
-                        </span>
                     </div> {% endcomment %}
-
-                
                 </div>
 
                 <div class="mt-auto m-5">
@@ -175,21 +150,10 @@
             </div>
         
             <!-- Chat List -->
-            <div class="w-80 border-r p-5 flex flex-col bg-[#256eff] bg-opacity-10 shadow-md">
+            <div id="chatlisthide" class="w-80 border-r p-5 flex flex-col bg-[#256eff] bg-opacity-10 shadow-md">
                 <div class="mb-4 relative">
                     <input type="text" class="w-full p-2 pl-12 border-0 bg-[#101B4F] bg-opacity-15 opacity-50 rounded-lg font-medium shadow-sm " placeholder="Search messages">
                     
-                    {% comment %} <!-- Add Friend Button -->
-                    <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 group flex justify-center">
-                        <button onclick="openAddFriendPopup()">
-                            <i class="fas fa-user-plus text-xl"></i>
-                        </button>
-                        <span class="absolute w-max -right-4 -translate-x-1/2 -top-5 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
-                            Add Friend
-                        </span>
-                    </div> {% endcomment %}
-
-                    {% comment %} <div class="absolute h-6 rounded-full w-0.5 bg-gray-400 left-10 top-1/2 transform -translate-y-1/2 ml-1"></div> {% endcomment %}
                     <!-- Search Friend Button -->
                     <button class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">
                         <i class="fa-solid fa-magnifying-glass"></i>
@@ -223,7 +187,7 @@
                                 <p class="font-medium">{{ friend.username }}</p>
                                 <p class="text-xs text-gray-500">
                                     {% if friend.last_message %}
-                                        {{ friend.last_message.text|truncatechars:20 }}  <!-- ✅ Show last message (truncate long ones) -->
+                                        {{ friend.last_message.text|truncatechars:20 }}
                                     {% endif %}
                                 </p>
                             </div>
@@ -273,9 +237,7 @@
                 </div>
             </div>
 
-            
-
-            <!-- ✅ Welcome Message (Now Properly Centered) -->
+            <!-- ✅ Welcome Message -->
             <div id="welcomeMessage" class="flex flex-col h-screen w-full justify-center text-center absolute inset-0 pointer-events-none">
                 <div class="ml-80">
                     <h2 class="text-3xl font-bold text-gray-700">🚀 Ignite Your Conversations! 💬✨</h2>
@@ -296,7 +258,6 @@
                     </div>
                     
                     <span id="isAdmin" hidden>{{ request.user.username}}</span>
-                    {% comment %} <span id="groupAdmin" hidden>{{ group.admin }}</span>{% endcomment %}
                     <div class="space-x-2 flex">
                         <div class="flex justify-center"  id="addMemberButton" style="display: none;">
                             <button class="group relative p-4 text-gray-500 bg-blue-100 hover:bg-blue-200 rounded-2xl" onclick="openAddMemberPopup()">
@@ -306,17 +267,7 @@
                             </span>
                             </button>
                         </div>
-                      
-                        {% comment %} <div class="text-gray-500 group flex justify-center">
-                            <button class="p-4 text-gray-500 bg-blue-100 hover:bg-blue-200 rounded-2xl" onclick="openAddMemberPopup()">
-                                <i class="fa-solid fa-user-plus"></i>
-                            </button>
-                            <span class="absolute w-max -ml-8 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
-                                Add Group Member
-                            </span>
-                        </div> {% endcomment %}
                         
-                    
                         <button class="text-gray-500" onclick="closeChat()">
                             <i class="fa-solid fa-circle-xmark text-xl rounded-full p-3 hover:bg-blue-100"></i>
                         </button>
@@ -378,7 +329,6 @@
 
 
         <!-- ALL Popups -->
-
         <!-- Friend Request Popup -->
         <div id="addFriendPopup" class="hidden fixed inset-0 bg-black bg-opacity-50 items-start justify-start">
             <div class="bg-white p-6 rounded-lg shadow-lg w-96 my-24 mx-96">
@@ -483,9 +433,7 @@
                             <input type="email" name="email" value="{{ request.user.email }}" 
                                     class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"  
                                     placeholder="Enter your email">
-                                {% comment %} <div class="p-2 bg-gray-50 rounded-lg">
-                                    {{ request.user.email }}
-                                </div> {% endcomment %}
+                                
                         </div>
                     </div>
 
@@ -525,97 +473,54 @@
         </div>
 
 
+        <!-- ✅ Profile Popup Group -->
+        <div id="profilePopupGroup" class="fixed inset-0 bg-black bg-opacity-50 invisible opacity-0 flex items-start justify-center">
+            <div class="bg-white p-6 rounded-lg shadow-lg w-auto mt-14 mr-16">
+                <h2 class="text-lg font-semibold text-center mb-4">Group Profile</h2>
+                <div class="flex flex-col items-center">
 
-
-
-
-
-            <!-- ✅ Profile Popup Group -->
-            {% comment %} <div id="profilePopupGroup" class="fixed inset-0 bg-black bg-opacity-50 invisible opacity-0 flex items-start justify-center">
-                <div class="bg-white p-6 rounded-lg shadow-lg w-auto mt-14 mr-16">
-                    <h2 class="text-lg font-semibold text-center mb-4">Group Profile</h2>
-                    <div class="flex flex-col items-center">
+                    <!-- Group Avatar (Editable for Admin) -->
+                    <div class="relative group">
                         <img id="popupGroupAvatar" class="w-24 h-24 rounded-full border-2 border-gray-300 shadow-md object-cover" alt="Group Avatar">
+                        <div id="popupGroupAvatarEdit" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer invisible"
+                            onclick="document.getElementById('groupAvatarInput').click()">
+                            <i class="fas fa-camera text-white text-2xl"></i>
+                        </div>
+                        <input type="file" id="groupAvatarInput" class="hidden" accept="image/*" onchange="previewGroupAvatar(event)">
+                    </div>
+
+                    <!-- Group Name (Editable for Admin) -->
+                    <div class="w-96 p-2 rounded-lg text-center">
                         <p id="popupGroupName" class="mt-3 text-xl font-semibold"></p>
-                        
-                        
-                        
-                        <!-- Admin Field -->
-                        <div class="w-96 mt-2 bg-gray-100 p-2 rounded-lg">
-                            <label for="popupAdmin" class="mt-2 text-gray-500  font-semibold">Admin</label>
-                            <p id="popupAdmin" class="mt-1 text-gray-500"></p>
-                        </div>
-                        
-                        <!-- Bio Field -->
-                        <div class="w-96 mt-2 bg-gray-100 p-2 rounded-lg">
-                            <label for="popupGroupBio" class="mt-2 text-gray-500  font-semibold">Bio</label>
-                            <p id="popupGroupBio" class="mt-2 text-gray-500"></p>
-                        </div>
+                        <input type="text" id="popupGroupNameEdit" class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 hidden">
                     </div>
 
-                    
-                    
-                    <!-- Close Button -->
-                    <button onclick="closeProfilePopup()" class="mt-4 px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg w-full">
-                        Close
-                    </button>
-                </div>
-            </div> {% endcomment %}
-
-            <!-- ✅ Profile Popup Group -->
-            <div id="profilePopupGroup" class="fixed inset-0 bg-black bg-opacity-50 invisible opacity-0 flex items-start justify-center">
-                <div class="bg-white p-6 rounded-lg shadow-lg w-auto mt-14 mr-16">
-                    <h2 class="text-lg font-semibold text-center mb-4">Group Profile</h2>
-                    <div class="flex flex-col items-center">
-
-                        <!-- Group Avatar (Editable for Admin) -->
-                        <div class="relative group">
-                            <img id="popupGroupAvatar" class="w-24 h-24 rounded-full border-2 border-gray-300 shadow-md object-cover" alt="Group Avatar">
-                            <div id="popupGroupAvatarEdit" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer invisible"
-                                onclick="document.getElementById('groupAvatarInput').click()">
-                                <i class="fas fa-camera text-white text-2xl"></i>
-                            </div>
-                            <input type="file" id="groupAvatarInput" class="hidden" accept="image/*" onchange="previewGroupAvatar(event)">
-                        </div>
-
-                        <!-- Group Name (Editable for Admin) -->
-                        <div class="w-96 p-2 rounded-lg text-center">
-                            <p id="popupGroupName" class="mt-3 text-xl font-semibold"></p>
-                            <input type="text" id="popupGroupNameEdit" class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 hidden">
-                        </div>
-
-                        <!-- Admin Field -->
-                        <div class="w-96 mt-2 bg-gray-100 p-2 rounded-lg">
-                            <label for="popupAdmin" class="mt-2 text-gray-500 font-semibold">Admin</label>
-                            <p id="popupAdmin" class="mt-1 text-gray-500"></p>
-                        </div>
-
-                        <!-- Bio Field (Editable for Admin) -->
-                        <div class="w-96 mt-2 bg-gray-100 p-2 rounded-lg">
-                            <label for="popupGroupBio" class="mt-2 text-gray-500 font-semibold">Bio</label>
-                            <p id="popupGroupBio" class="mt-2 text-gray-500"></p>
-                            <textarea id="popupGroupBioEdit" class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 hidden"></textarea>
-                        </div>
+                    <!-- Admin Field -->
+                    <div class="w-96 mt-2 bg-gray-100 p-2 rounded-lg">
+                        <label for="popupAdmin" class="mt-2 text-gray-500 font-semibold">Admin</label>
+                        <p id="popupAdmin" class="mt-1 text-gray-500"></p>
                     </div>
 
-                    <!-- Save Button (Only visible for Admins) -->
-                    <button id="saveGroupProfile" onclick="saveGroupProfile()" 
-                            class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg w-full hidden">
-                        Save Changes
-                    </button>
-
-                    <!-- Close Button -->
-                    <button onclick="closeProfilePopup()" class="mt-2 px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg w-full">
-                        Close
-                    </button>
+                    <!-- Bio Field (Editable for Admin) -->
+                    <div class="w-96 mt-2 bg-gray-100 p-2 rounded-lg">
+                        <label for="popupGroupBio" class="mt-2 text-gray-500 font-semibold">Bio</label>
+                        <p id="popupGroupBio" class="mt-2 text-gray-500"></p>
+                        <textarea id="popupGroupBioEdit" class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 hidden"></textarea>
+                    </div>
                 </div>
+
+                <!-- Save Button (Only visible for Admins) -->
+                <button id="saveGroupProfile" onclick="saveGroupProfile()" 
+                        class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg w-full hidden">
+                    Save Changes
+                </button>
+
+                <!-- Close Button -->
+                <button onclick="closeProfilePopup()" class="mt-2 px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg w-full">
+                    Close
+                </button>
             </div>
-
-
-
-
-
-        
+        </div>
 
 
         <!-- 🎤 Voice Recording Popup -->
@@ -712,7 +617,12 @@
                         </audio>
                     `;
                 }
+                // ✅ Handle image Messages 🎤
                 else if (msg.file_url && msg.file_type.startsWith("image/")) {
+                    let downloadUrl = msg.file_url;
+                    if (downloadUrl.includes("cloudinary.com") && !downloadUrl.includes("fl_attachment")) {
+                        downloadUrl = downloadUrl.replace("/upload/", "/upload/fl_attachment/");
+                    }
                     messageContent = `
                         <div class="${messageBg} p-2 rounded-lg relative">
                             <!-- ✅ Image Preview (Click to Zoom) -->
@@ -720,14 +630,14 @@
                 
                             <!-- ✅ Download Button -->
                             <div class="absolute bottom-2 right-2 ${messageBg} bg-opacity-75 p-1 rounded">
-                                <a href="${msg.file_url}" download class="text-white text-sm px-2 py-1">
+                                <a href="${downloadUrl}" download class="text-white text-sm px-2 py-1">
                                     <i class="fas fa-download"></i>
                                 </a>
                             </div>
                         </div>
                     `;
                 }                
-                
+                // ✅ Handle Video Messages 🎤
                 else if (msg.file_url && msg.file_type.startsWith("video/")) {
                     messageContent = `
                         <div class="${messageBg} p-2 rounded-lg">
@@ -741,9 +651,19 @@
                 // ✅ Show PDF 📄
                 else if (msg.file_url && msg.file_type === "application/pdf") {
                     let truncatedFileName = msg.file_name.length > 20 
-                    ? msg.file_name.substring(11, 25) + "..." 
+                    ? msg.file_name.substring(0, 15) + "..." 
                     : msg.file_name;
                     
+                    // Ensure fl_attachment works for both raw and image
+                    const injectDownloadParam = (url) => {
+                        if (!url.includes('fl_attachment')) {
+                            return url.replace('/upload/', '/upload/fl_attachment/');
+                        }
+                        return url;
+                    };
+
+                    const pdfUrl = injectDownloadParam(msg.file_url);
+
                     messageContent = `
                         <div class="p-2 ${messageBg} rounded-lg flex items-center">
                             <i class="fas fa-file-pdf text-yellow-400 text-2xl mr-2"></i>
@@ -754,9 +674,9 @@
                     `;
                 }
                 // ✅ Show Word/Excel Documents 📂
-                else if (msg.file_url && (msg.file_type.includes("msword") || msg.file_type.includes("officedocument.spreadsheetml.sheet"))) {
+                else if (msg.file_url && (msg.file_type.includes("officedocument.wordprocessingml.document") || msg.file_type.includes("officedocument.spreadsheetml.sheet"))) {
                     let truncatedFileName = msg.file_name.length > 20 
-                    ? msg.file_name.substring(11, 30) + "..." 
+                    ? msg.file_name.substring(0, 20) + "..." 
                     : msg.file_name;
                     
                     messageContent = `
@@ -771,11 +691,11 @@
                 // ✅ Handle Other File Attachments 📂
                 else if (msg.file_url) {
                     let truncatedFileName = msg.file_name.length > 20 
-                    ? msg.file_name.substring(11, 30) + "..." 
+                    ? msg.file_name.substring(0, 20) + "..." 
                     : msg.file_name;
                     messageContent = `
                         <div class="${messageBg} p-2 rounded-lg flex items-center">
-                            <i class="fas fa-file-alt text-yellow-400 text-2xl mr-2"></i>
+                            <i class="fas fa-file text-yellow-400 text-2xl mr-2"></i>
                             <a href="${msg.file_url}" target="_blank" class="text-white font-semibold hover:text-yellow-500">
                                 ${truncatedFileName}
                             </a>
@@ -784,7 +704,20 @@
                 }
                 // ✅ Handle Text Messages 📄
                 else {
-                    let formattedText = (msg.text || "").replace(/\n/g, "<br>");
+                    let rawText = msg.text || "";
+
+                    // Detect and convert URLs into clickable links
+                    let linkifiedText = rawText.replace(
+                        /((https?:\/\/|www\.)[^\s]+)/gi,
+                        function (url) {
+                            let href = url.startsWith("http") ? url : `http://${url}`;
+                            return `<a href="${href}" target="_blank" class="underline text-lime-300 hover:text-lime-400">${url}</a>`;
+                        }
+                    );
+
+                    // Preserve newlines
+                    let formattedText = linkifiedText.replace(/\n/g, "<br>");
+
                     // let formattedText = msg.text.replace(/\n/g, "<br>"); // ✅ Preserve new lines
                     messageContent = `<div class="${messageBg} chat-bubble ${textSizeClass} text-white py-2 px-4 rounded-xl max-w-lg">
                                         ${formattedText}
@@ -808,7 +741,7 @@
                 `;
             
                 messagesContainer.innerHTML += messageHtml;
-                messagesContainer.scrollTop = messagesContainer.scrollHeight; // ✅ Auto-scroll to latest message
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
             
             }
 
@@ -818,7 +751,7 @@
                 let modalImage = document.getElementById("modalImage");
 
                 modalImage.src = imageUrl;
-                modal.classList.remove("invisible", "opacity-0"); // ✅ Make modal visible
+                modal.classList.remove("invisible", "opacity-0");
                 modal.classList.add("opacity-100");
             }
 
@@ -832,7 +765,7 @@
                 // ✅ Delay adding `invisible` to match animation
                 setTimeout(() => {
                     modal.classList.add("invisible");
-                }, 300); // Matches `transition-opacity duration-300`
+                }, 300); 
             }
 
     
@@ -840,13 +773,13 @@
             document.addEventListener('DOMContentLoaded', () => {
                 // Initialize Emoji Picker
                 const picker = new EmojiButton({
-                    autoHide: false, // Prevent picker from hiding automatically
+                    autoHide: false, 
                 });
         
                 // When user selects an emoji, insert it into the textarea
                 picker.on('emoji', selection => {
                     let input = document.getElementById('messageInput');
-                    input.value += selection; // Append emoji to the input field
+                    input.value += selection;
                 });
         
                 // Show/Hide picker when the button is clicked
@@ -854,16 +787,6 @@
                     picker.pickerVisible ? picker.hidePicker() : picker.showPicker(document.getElementById('emojiBtn'));
                 });
             });
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -897,11 +820,15 @@
                 }
                 // ✅ Show Image 📸
                 else if (msg.file_url && msg.file_type.startsWith("image/")) {
+                    let downloadUrl = msg.file_url;
+                    if (downloadUrl.includes("cloudinary.com") && !downloadUrl.includes("fl_attachment")) {
+                        downloadUrl = downloadUrl.replace("/upload/", "/upload/fl_attachment/");
+                    }
                     messageContent = `
                         <div class="${messageBg} p-2 rounded-lg relative">
                             <img src="${msg.file_url}" class="max-w-xs rounded-lg cursor-pointer" alt="Sent Image" onclick="openImageModal('${msg.file_url}')">
                             <div class="absolute bottom-2 right-2 ${messageBg} bg-opacity-75 p-1 rounded">
-                                <a href="${msg.file_url}" download class="text-white text-sm px-2 py-1">
+                                <a href="${downloadUrl}" download class="text-white text-sm px-2 py-1">
                                     <i class="fas fa-download"></i>
                                 </a>
                             </div>
@@ -922,8 +849,19 @@
                 // ✅ Show PDF 📄
                 else if (msg.file_url && msg.file_type === "application/pdf") {
                     let truncatedFileName = msg.file_name.length > 20 
-                    ? msg.file_name.substring(11, 25) + "..." 
+                    ? msg.file_name.substring(0, 15) + "..." 
                     : msg.file_name;
+
+                    // Ensure fl_attachment works for both raw and image
+                    const injectDownloadParam = (url) => {
+                        if (!url.includes('fl_attachment')) {
+                            return url.replace('/upload/', '/upload/fl_attachment/');
+                        }
+                        return url;
+                    };
+
+                    const pdfUrl = injectDownloadParam(msg.file_url);
+
                     
                     messageContent = `
                         <div class="p-2 ${messageBg} rounded-lg flex items-center">
@@ -935,9 +873,9 @@
                     `;
                 }
                 // ✅ Show Word/Excel Documents 📂
-                else if (msg.file_url && (msg.file_type.includes("msword") || msg.file_type.includes("officedocument.spreadsheetml.sheet"))) {
+                else if (msg.file_url && (msg.file_type.includes("officedocument.wordprocessingml.document") || msg.file_type.includes("officedocument.spreadsheetml.sheet"))) {
                     let truncatedFileName = msg.file_name.length > 20 
-                    ? msg.file_name.substring(11, 30) + "..." 
+                    ? msg.file_name.substring(0, 20) + "..." 
                     : msg.file_name;
                     
                     messageContent = `
@@ -952,7 +890,7 @@
                 // ✅ Handle Other File Attachments 📂
                 else if (msg.file_url) {
                     let truncatedFileName = msg.file_name.length > 20 
-                    ? msg.file_name.substring(11, 30) + "..." 
+                    ? msg.file_name.substring(0, 20) + "..." 
                     : msg.file_name;
                     messageContent = `
                         <div class="${messageBg} p-2 rounded-lg flex items-center">
@@ -965,7 +903,19 @@
                 }
                 // ✅ Handle Text Messages 📄
                 else {
-                    let formattedText = (msg.text || "").replace(/\n/g, "<br>");
+                    let rawText = msg.text || "";
+
+                    // Detect and convert URLs into clickable links
+                    let linkifiedText = rawText.replace(
+                        /((https?:\/\/|www\.)[^\s]+)/gi,
+                        function (url) {
+                            let href = url.startsWith("http") ? url : `http://${url}`;
+                            return `<a href="${href}" target="_blank" class="underline text-lime-300 hover:text-lime-400">${url}</a>`;
+                        }
+                    );
+
+                    // Preserve newlines
+                    let formattedText = linkifiedText.replace(/\n/g, "<br>");
 
                     // let formattedText = msg.text.replace(/\n/g, "<br>"); // ✅ Preserve new lines
                     messageContent = `<div class="${messageBg} chat-bubble ${textSizeClass} text-white py-2 px-4 rounded-xl max-w-lg">
@@ -997,41 +947,6 @@
             }
            
         </script>
-{% comment %}   
-// ✅ Construct message HTML with sender name
-                let messageHtml = `
-                   <div class="mb-4 flex ${isSentByMe} items-start" data-message-id="${msg.id}">
-                       ${senderAvatar}
-                       <div>
-                           ${!msg.is_sent_by_me ? `<span class="text-gray-400 text-sm">${senderName}</span>` : ''}
-                           ${messageContent}
-                           <span class="ml-2 text-sm text-gray-400">${msg.timestamp}</span>
-                       </div>
-                   </div>
-                `;
 
-// ✅ Handle Text Messages 📄
-                else {
-                    let formattedText = msg.text.replace(/\n/g, "<br>");
-                    messageContent = `<div class="${messageBg} chat-bubble ${textSizeClass} text-white py-2 px-4 rounded-xl max-w-lg">
-                                            ${formattedText}
-                                    </div>`;
-                }      
-        // ✅ Modal Functions for Image Preview
-        function openImageModal(imageUrl) {
-            let modal = document.getElementById("imageModal");
-            let modalImage = document.getElementById("modalImage");
-            modalImage.src = imageUrl;
-            modal.classList.remove("invisible", "opacity-0");
-            modal.classList.add("opacity-100");
-        }
-        
-        function closeImageModal() {
-            let modal = document.getElementById("imageModal");
-            modal.classList.remove("opacity-100");
-            modal.classList.add("opacity-0");
-            setTimeout(() => modal.classList.add("invisible"), 300);
-        }
-         {% endcomment %}
     </body>
 </html>

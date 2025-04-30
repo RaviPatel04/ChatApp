@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Terms and Conditions{% endblock %}
+
+{% block content %}
+<div class="bg-gray-100 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="w-4xl mx-auto bg-white rounded-xl shadow-md p-8 mt-20">
+        <h1 class="text-4xl font-bold text-indigo-600 mb-6">Terms and Conditions</h1>
+        <p class="text-gray-700 mb-4">
+            Welcome! These Terms and Conditions outline the rules and regulations for the use of our platform. 
+            By accessing or registering on our website, you accept these terms in full.
+        </p>
+
+        <h2 class="text-2xl font-semibold text-gray-800 mt-6 mb-2">1. User Eligibility</h2>
+        <p class="text-gray-600 mb-4">
+            You must be at least 13 years old to create an account or use our services. By agreeing to these terms, you confirm that you meet this requirement.
+        </p>
+
+        <h2 class="text-2xl font-semibold text-gray-800 mt-6 mb-2">2. Account Responsibility</h2>
+        <p class="text-gray-600 mb-4">
+            You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account.
+        </p>
+
+        <h2 class="text-2xl font-semibold text-gray-800 mt-6 mb-2">3. Acceptable Use</h2>
+        <ul class="list-disc ml-6 text-gray-600 space-y-2">
+            <li>Do not use the site for any unlawful or harmful activities.</li>
+            <li>Respect other users and do not engage in abusive or harassing behavior.</li>
+            <li>Do not attempt to hack, spam, or exploit the system.</li>
+        </ul>
+
+        <h2 class="text-2xl font-semibold text-gray-800 mt-6 mb-2">4. Content Ownership</h2>
+        <p class="text-gray-600 mb-4">
+            All content uploaded or submitted remains the property of the original creator. However, by uploading, you grant us a non-exclusive right to display your content for the purpose of service delivery.
+        </p>
+
+        <h2 class="text-2xl font-semibold text-gray-800 mt-6 mb-2">5. Changes to the Terms</h2>
+        <p class="text-gray-600 mb-4">
+            We may update our Terms and Conditions from time to time. Any changes will be posted on this page with an updated effective date.
+        </p>
+
+        <h2 class="text-2xl font-semibold text-gray-800 mt-6 mb-2">6. Contact Information</h2>
+        <p class="text-gray-600 mb-6">
+            If you have any questions about our Terms and Conditions, feel free to 
+            <a href="{% url 'contact' %}" class="text-indigo-600 hover:underline">contact us</a>.
+        </p>
+
+        <div class="text-center mt-8">
+            <a href="{% url 'register_view' %}">
+                <button class="relative bg-blue-600 text-white px-12 py-4 rounded-2xl font-semibold ml-4 group transition-all duration-500 ease-in-out hover:pl-16">
+                    <i class="fa-solid fa-backward absolute opacity-0 group-hover:opacity-100 transition-all duration-500 ease-in-out pl-3 left-3 top-7 transform -translate-y-1/2"></i>
+                    Back to Registration
+                </button>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

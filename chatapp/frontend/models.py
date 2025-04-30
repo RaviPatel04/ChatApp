@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.utils.timezone import now
 import threading
 import time
+from cloudinary.models import CloudinaryField
 
 
 # Create your models here.
@@ -13,23 +14,22 @@ class ContactUs(models.Model):
     name = models.CharField(max_length=255)
     email = models.EmailField()
     phone = models.CharField(max_length=10, blank=True, null=True)
-    communication_method = models.CharField(max_length=10, choices=[('email', 'Email'), ('phone', 'Phone')], default='email')  # Added communication method
+    communication_method = models.CharField(max_length=10, choices=[('email', 'Email'), ('phone', 'Phone')], default='email')
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Message from {self.name}"
-    
+
 
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    avatar = models.ImageField(upload_to='avatars/', default='avatars/default.png')
+    avatar = CloudinaryField('image', folder='avatars/', default='avatars/default', use_filename = True, unique_filename=False,)
     bio = models.TextField(max_length=500, blank=True)
     phone = models.CharField(max_length=15, blank=True)
     
     def clean(self):
-        # Add email validation at the model level
         if self.user.email and User.objects.filter(email=self.user.email).exclude(id=self.user.id).exists():
             raise ValidationError({'email': 'This email is already in use.'})
     
@@ -46,7 +46,7 @@ def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
 
 
-    
+
 
 class Friendship(models.Model):
     user1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name="friends")
@@ -54,7 +54,7 @@ class Friendship(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user1', 'user2')  # Ensure a unique friendship
+        unique_together = ('user1', 'user2')
         ordering = ['created_at']
 
     def __str__(self):
@@ -67,8 +67,8 @@ class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_messages")
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="received_messages")
     text = models.TextField()
-    audio = models.FileField(upload_to="voice_messages/", blank=True, null=True)
-    file = models.FileField(upload_to="chat_files/",blank=True, null=True)
+    audio = CloudinaryField('audio', resource_type='video', folder="voice_messages/", blank=True, null=True)
+    file = CloudinaryField('file', resource_type='auto', folder="chat_files/", use_filename = True, unique_filename=False, blank=True, null=True)
     timestamp = models.DateTimeField(default=now)
     is_read = models.BooleanField(default=False)
 
@@ -83,7 +83,6 @@ class Message(models.Model):
 
 
 
-#26/02/25
 class FriendRequest(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Pending'),
@@ -100,17 +99,17 @@ class FriendRequest(models.Model):
     def delete_after_20_seconds(self):
         """ Automatically delete the friend request after 20 seconds if accepted or rejected """
         def delete_request():
-            time.sleep(20)  # Wait 20 seconds
-            self.delete()    # Delete the FriendRequest
+            time.sleep(20)  
+            self.delete()    
 
         if self.status in ["accepted", "rejected"]:
             threading.Thread(target=delete_request).start()
 
     def save(self, *args, **kwargs):
         """ Override save to trigger deletion on status change """
-        super().save(*args, **kwargs)  # Save first
+        super().save(*args, **kwargs)  
         if self.status in ["accepted", "rejected"]:
-            self.delete_after_20_seconds()  # Start deletion timer
+            self.delete_after_20_seconds() 
 
     
     class Meta:
@@ -121,21 +120,6 @@ class FriendRequest(models.Model):
     
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#27/03/2025
 class Group(models.Model):
     name = models.CharField(max_length=100)
     admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name="owned_groups")
@@ -145,15 +129,13 @@ class Group(models.Model):
     def __str__(self):
         return self.name
     
-
-    
     
 class GroupMessage(models.Model):
     group = models.ForeignKey(Group,on_delete=models.CASCADE,related_name="messages")
     sender = models.ForeignKey(User,on_delete=models.CASCADE)
     text = models.TextField(blank=True)
-    audio = models.FileField(upload_to="voice_messages/", blank=True, null=True)
-    file = models.FileField(upload_to="chat_files/",blank=True,null=True)
+    audio = CloudinaryField('audio', resource_type='video', folder="group_voice_messages/", blank=True, null=True)
+    file = CloudinaryField('file', resource_type='auto', folder="group_chat_files/", use_filename = True, unique_filename=False, blank=True, null=True)
     timestamp = models.DateTimeField(default=now)
     is_read = models.BooleanField(default=False)
 
@@ -163,7 +145,8 @@ class GroupMessage(models.Model):
     def __str__(self):
         return f"Group: {self.group.name} | Sender: {self.sender.username}"
 
-# 27/03/2025
+
+
 class GroupRequest(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Pending'),
@@ -179,23 +162,6 @@ class GroupRequest(models.Model):
 
     def __str__(self):
         return f"{self.group.admin.username} invites {self.invited_user.username} to {self.group.name} ({self.status})"
-
-        # admin_username = self.group.admin.username if self.group and self.group.admin else 'Unknown Admin'
-        # invited_username = self.invited_user.username if self.invited_user else 'Unknown User'
-        # return f"{admin_username} invites {invited_username} to {self.group.name} ({self.status})"
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -224,6 +190,7 @@ class Notification(models.Model):
     
     def __str__(self):
         return f"{self.type} from {self.sender.username} to {self.user.username}"
+
 
 # Signal to create notification when friend request is created
 @receiver(post_save, sender=FriendRequest)
@@ -265,32 +232,9 @@ def create_friendship(sender, instance, **kwargs):
 
 
 
-
-
-    
-
-# class GroupRequest(models.Model):
-#     STATUS_CHOICES = (
-#         ('pending', 'Pending'),
-#         ('accepted', 'Accepted'),
-#         ('rejected', 'Rejected'),
-#     )
-#     # The invited user who will decide whether to join the group.
-#     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_group_requests')
-#     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='group_requests')
-#     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
-
-#     def __str__(self):
-#         return f"{self.sender.username} -> {self.group.name} ({self.status})"    
-
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-
 class GroupProfile(models.Model):
     group = models.OneToOneField(Group, on_delete=models.CASCADE, related_name='profile')
-    group_avatar = models.ImageField(upload_to='group_avatars/', default='group_avatars/group_default.png')
+    group_avatar = CloudinaryField('image', folder='group_avatars/', default='group_avatars/group_default', use_filename = True, unique_filename=False,)
     group_bio = models.TextField(max_length=500, blank=True)
     group_admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name='group_admins')
     created_at = models.DateTimeField(auto_now_add=True)
